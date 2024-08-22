@@ -1,5 +1,5 @@
-import sys
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Connect to database
 def connect_to_db():
@@ -7,112 +7,134 @@ def connect_to_db():
             host="localhost",
             database="crumbs_db",
             user="postgres",
-            password="postgres")
+            password="postgres",
+            cursor_factory=RealDictCursor)
     return conn
 
+# Make sure data is present
+def row_filled(row):
+    if row:
+        print(dict(row))
+        return dict(row)
+    else: 
+        print("No user with this username and password found.")
+        return ('', 204)
+
+
 # Adding a user
-def create_user(conn, input_email, input_password):
+def user_create(input_email, input_password):
+    # Connect to database
+    conn = connect_to_db()
+
     # Open a cursor to perform database operations
     cur = conn.cursor()
 
     # Insert data into the table
     cur.execute(
         "INSERT INTO users (email, password)"
-        "VALUES (%s, %s)",
+        "VALUES (%s, %s) "
+        "RETURNING *",
         (input_email, input_password)
     )
+    row = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return row_filled(row)
+
+# Read a user's information
+def user_read_by_id(id):
+    conn = connect_to_db()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT * FROM users WHERE "
+        "id = %s",
+        (id,)
+    )
+    row = cur.fetchone()
     
     conn.commit()
     cur.close()
+    conn.close()
 
-# Read a user
-def read_user(conn, input_email, input_password):
-    # Open a cursor to perform database operations
+    # Make sure to only return information if present.
+    return row_filled(row)
+
+# Update a user's account
+def user_update_by_id(id, new_email, new_password):
+    conn = connect_to_db()
     cur = conn.cursor()
 
     # Select data from the table
     cur.execute(
-        "SELECT * FROM users WHERE "
-        "email = %s AND password = %s",
-        (input_email, input_password)
+        "UPDATE users SET "
+        "email = %s, password = %s WHERE "
+        "id = %s"
+        "RETURNING *",
+        (new_email, new_password, id)
     )
-
-    user_info = cur.fetchone()
-    if user_info:
-        print(user_info)
-    else: 
-        print("No user with this username and password found.")
     
+    row = cur.fetchone()
+
     conn.commit()
     cur.close()
+    conn.close()
+    return row_filled(row)
 
 # Update a user's email
-def update_email(conn, input_email, input_password, new_email):
-    # Open a cursor to perform database operations
+def user_update_email(input_email, input_password, new_email):
+    conn = connect_to_db()
     cur = conn.cursor()
 
     # Select data from the table
     cur.execute(
         "UPDATE users SET "
         "email = %s WHERE "
-        "email = %s AND password = %s",
+        "email = %s AND password = %s"
+        "RETURNING *",
         (new_email, input_email, input_password)
     )
+    row = cur.fetchone()
 
     conn.commit()
     cur.close()
+    conn.close()
+    return row_filled(row)
 
 # Update a user's password
-def update_password(conn, input_email, input_password, new_password):
-    # Open a cursor to perform database operations
+def user_update_password(input_email, input_password, new_password):
+    conn = connect_to_db()
     cur = conn.cursor()
 
     # Select data from the table
     cur.execute(
         "UPDATE users SET "
         "password = %s WHERE "
-        "email = %s AND password = %s",
+        "email = %s AND password = %s"
+        "RETURNING *",
         (new_password, input_email, input_password)
     )
+    row = cur.fetchone()
     
     conn.commit()
     cur.close()
+    conn.close()
+    return row_filled(row)
 
 # Deleting a user
-def delete_user(conn, input_email, input_password):
-    # Open a cursor to perform database operations
+# Read a user's information
+def user_delete_by_id(id):
+    conn = connect_to_db()
     cur = conn.cursor()
-    
-    # Delete only user with the same username AND password
+
     cur.execute(
         "DELETE FROM users WHERE "
-        "email = %s AND password = %s",
-        (input_email, input_password)
+        "id = %s",
+        (id,)
     )
     
     conn.commit()
     cur.close()
-
-# Test CRUD operations for users.
-if (len(sys.argv)!=4):
-    print("Not enough inputs given, must be in the format of:")
-    print("python db.py [create, read, update_email, update_password, delete] [email] [password]")
-    exit(1)
-conn = connect_to_db()
-
-match sys.argv[1]:
-    case "create":
-        create_user(conn, sys.argv[2], sys.argv[3])
-    case "read":
-        read_user(conn, sys.argv[2], sys.argv[3])
-    case "update_email":
-        new_email = input("Enter a new email: ")
-        update_email(conn, sys.argv[2], sys.argv[3], new_email)
-    case "update_password":
-        new_password = input("Enter a new password: ")
-        update_password(conn, sys.argv[2], sys.argv[3], new_password)
-    case "delete":
-        delete_user(conn, sys.argv[2], sys.argv[3])
-
-conn.close()
-
+    conn.close()
+    return {"Message": "User is eliminated."}
