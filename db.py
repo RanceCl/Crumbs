@@ -14,10 +14,8 @@ def connect_to_db():
 # Make sure data is present
 def row_filled(row):
     if row:
-        print(dict(row))
         return dict(row)
     else: 
-        print("No user with this username and password found.")
         return ('', 204)
 
 

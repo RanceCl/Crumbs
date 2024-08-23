@@ -16,8 +16,8 @@ def create():
     password = request.form.get("password")
     return db.user_create(email, password)
 
-# Show account based on email and password.
-@app.route('/users/<id>')
+# Show account based on id.
+@app.route('/users/<id>', methods=['GET'])
 def read(id):
     return db.user_read_by_id(id)
 
