@@ -26,7 +26,7 @@ def read(id):
 def update(id):
     email = request.form.get("email")
     password = request.form.get("password")
-    return db.user_update_by_id(email, password)
+    return db.user_update_by_id(id, email, password)
 
 # Delete account based on id.
 @app.route('/users/<id>', methods=['DELETE'])
