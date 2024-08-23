@@ -10,7 +10,7 @@ CORS(app)
 def home():
     return "That's the way the cookie crumbles!"
 
-@app.route('/users/create', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def create():
     email = request.form.get("email")
     password = request.form.get("password")
