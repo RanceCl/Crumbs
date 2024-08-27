@@ -46,11 +46,11 @@ def table_setup(conn):
     # Table for users
     cur.execute(
         "CREATE TABLE users (id SERIAL PRIMARY KEY,"
-        "email VARCHAR(255) NOT NULL,"
+        "email VARCHAR(255) UNIQUE NOT NULL,"
         "password VARCHAR(20) NOT NULL,"
         "date_added DATE DEFAULT CURRENT_TIMESTAMP);"
     )
-    
+    '''
     # Table for customers
     cur.execute(
         "CREATE TABLE customers (id SERIAL PRIMARY KEY,"
@@ -85,6 +85,7 @@ def table_setup(conn):
         "sub_total INT NOT NULL DEFAULT 0,"
         "PRIMARY KEY (order_id, cookie_id));"
     )
+    '''
     
     conn.commit()
     cur.close()
@@ -103,8 +104,8 @@ def table_populate(conn):
          ("Anonymous NoLastName", "SecretPassword"),
          ("Know HasLastName", "SeenPassword")]
     )
-    
-     # Populate customers
+    '''
+    # Populate customers
     cur.executemany(
         "INSERT INTO customers (first_name, last_name, user_id)"
         "VALUES (%s, %s, %s)",
@@ -130,7 +131,7 @@ def table_populate(conn):
          ("Toffee-tastic", 11),
          ("Trefoils", 12)]
     )
-    
+    '''
     conn.commit()
     cur.close()
 

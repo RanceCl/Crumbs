@@ -19,6 +19,59 @@ def row_filled(row):
         return ('', 204)
 
 
+# Registering a user
+def user_register(email, password):
+    # Connect to database
+    conn = connect_to_db()
+
+    # Open a cursor to perform database operations
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT * FROM users WHERE "
+        "email = %s",
+        (email,)
+    )
+    account_exists = cur.fetchone()
+
+    if account_exists: 
+        message = "Account with this email already exists!"
+    else:
+
+        # Insert data into the table
+        cur.execute(
+            "INSERT INTO users (email, password)"
+            "VALUES (%s, %s) "
+            "RETURNING *",
+            (email, password)
+        )
+        row = cur.fetchone()
+        message = row_filled(row)
+    conn.commit()
+    cur.close()
+    conn.close()
+    return message
+
+# Logging a user in
+def user_login(email, password):
+    # Connect to database
+    conn = connect_to_db()
+
+    # Open a cursor to perform database operations
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT * FROM users WHERE "
+        "email = %s AND password = %s",
+        (email, password)
+    )
+    user = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return user
+
 # Adding a user
 def user_create(input_email, input_password):
     # Connect to database
