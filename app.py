@@ -1,10 +1,12 @@
 from flask import Flask, request
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 import db
 import users
 import psycopg2
 app = Flask(__name__)
 CORS(app)
+bcrypt = Bcrypt(app)
 
 # Returns content
 @app.route("/")
@@ -27,6 +29,9 @@ def register():
         if not password_valid: 
             return password
         
+        # Hash password
+        password = bcrypt.generate_password_hash(password).decode('utf-8')
+        
         return db.user_register(email, password)
     elif request.method == 'POST':
         return "Please fill out the form!"
@@ -39,11 +44,13 @@ def login():
         and 'password' in request.form):
         email = request.form.get("email")
         password = request.form.get("password")
-        user = db.user_login(email, password)
-        if user:
-            return dict(user)
+        user = db.user_read(email)
+        if not user: 
+            return "Account with this email doesn't exist. Please try again."
+        elif not bcrypt.check_password_hash(user["password"], password):
+            return "Password is incorrect. Please try again."
         else:
-            return "Either email or password is incorrect. Please try again."
+            return dict(user)
     elif request.method == 'POST':
         return "Please fill out the form!"
     return "What you getting at?"
@@ -70,4 +77,3 @@ def update(id):
 @app.route('/users/<id>', methods=['DELETE'])
 def delete(id):
     return db.user_delete_by_id(id)
-

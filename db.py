@@ -52,8 +52,9 @@ def user_register(email, password):
     conn.close()
     return message
 
-# Logging a user in
-def user_login(email, password):
+
+# Read a user's information
+def user_read(email):
     # Connect to database
     conn = connect_to_db()
 
@@ -62,8 +63,8 @@ def user_login(email, password):
 
     cur.execute(
         "SELECT * FROM users WHERE "
-        "email = %s AND password = %s",
-        (email, password)
+        "email = %s",
+        (email,)
     )
     user = cur.fetchone()
 
@@ -73,7 +74,7 @@ def user_login(email, password):
     return user
 
 # Adding a user
-def user_create(input_email, input_password):
+def user_create(email, password):
     # Connect to database
     conn = connect_to_db()
 
@@ -85,7 +86,7 @@ def user_create(input_email, input_password):
         "INSERT INTO users (email, password)"
         "VALUES (%s, %s) "
         "RETURNING *",
-        (input_email, input_password)
+        (email, password)
     )
     row = cur.fetchone()
     conn.commit()
@@ -134,7 +135,7 @@ def user_update_by_id(id, new_email, new_password):
     return row_filled(row)
 
 # Update a user's email
-def user_update_email(input_email, input_password, new_email):
+def user_update_email(email, password, new_email):
     conn = connect_to_db()
     cur = conn.cursor()
 
@@ -144,7 +145,7 @@ def user_update_email(input_email, input_password, new_email):
         "email = %s WHERE "
         "email = %s AND password = %s"
         "RETURNING *",
-        (new_email, input_email, input_password)
+        (new_email, email, password)
     )
     row = cur.fetchone()
 
@@ -154,7 +155,7 @@ def user_update_email(input_email, input_password, new_email):
     return row_filled(row)
 
 # Update a user's password
-def user_update_password(input_email, input_password, new_password):
+def user_update_password(email, password, new_password):
     conn = connect_to_db()
     cur = conn.cursor()
 
@@ -164,7 +165,7 @@ def user_update_password(input_email, input_password, new_password):
         "password = %s WHERE "
         "email = %s AND password = %s"
         "RETURNING *",
-        (new_password, input_email, input_password)
+        (new_password, email, password)
     )
     row = cur.fetchone()
     

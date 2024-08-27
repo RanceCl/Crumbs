@@ -1,6 +1,7 @@
 import re
 from email_validator import validate_email, EmailNotValidError
 
+# Make sure that the email is in the desired format. Flag if invalid.
 def is_email_valid(email):
     try:
         v = validate_email(email)
@@ -11,7 +12,7 @@ def is_email_valid(email):
         # email is not valid, exception message is human-readable
         return str(e), False
 
-# Make sure that inputted password follows desired format.
+# Make sure that inputted password follows desired format. Flag if invalid.
 def is_password_valid(password):
     # Make sure password is between 
     if (len(password)<8) or (len(password)>20):
