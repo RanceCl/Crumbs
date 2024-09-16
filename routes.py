@@ -1,6 +1,6 @@
 from flask import request
 from flask_login import current_user, login_user, login_required, logout_user
-# from flask_cors import CORS
+from flask_cors import CORS
 
 from models import Users
 import user_validate
