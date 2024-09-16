@@ -99,6 +99,70 @@ def read():
     return {'id': current_user.id, 'email': current_user.email, 'password': current_user.password_hash}
     #return db_methods.user_read_by_id(id)
 
+# Update account email.
+@app.route('/users/change_email', methods=['GET','PATCH'])
+@login_required
+def change_email():
+    if (request.method == 'PATCH' 
+        and 'new_email' in request.form 
+        and 'password' in request.form):
+
+        # Retreive and verify password
+        password = request.form.get("password")
+        if not password: 
+            return "Please enter current password to confirm change."
+        if not current_user.check_password(password):
+            return "Password is incorrect. Please try again."
+
+        # Retreive and validate new email
+        new_email = request.form.get("new_email")
+        new_email, email_valid = user_validate.is_email_valid(new_email)
+        if not email_valid: 
+            return new_email
+        if Users.query.filter_by(email=new_email).first():
+            return "Account with this email already exists!"
+        
+        # Change email
+        current_user.email = new_email
+        db.session.commit()
+        return "Email changed!"
+    elif request.method == 'PATCH':
+        return "Please fill out the form!"
+    return "What you getting at?"
+
+# Update account password.
+@app.route('/users/change_password', methods=['GET','PATCH'])
+@login_required
+def change_password():
+    if (request.method == 'PATCH' 
+        and 'password' in request.form 
+        and 'new_password' in request.form 
+        and 'new_password_confirm' in request.form):
+
+        # Retreive and verify old password
+        password = request.form.get("password")
+        if not password: 
+            return "Please enter current password to confirm change."
+        if not current_user.check_password(password):
+            return "Password is incorrect. Please try again."
+        
+        # Retrieve and validate new password
+        new_password = request.form.get("new_password")
+        new_password_confirm = request.form.get("new_password_confirm")
+        if not user_validate.do_passwords_match(new_password, new_password_confirm):
+            return "Passwords should match!"
+        new_password, password_valid = user_validate.is_password_valid(new_password)
+        if not password_valid: 
+            return new_password
+        
+        # Change password
+        current_user.set_password(new_password)
+        db.session.commit()
+        return "Password changed!"
+    elif request.method == 'PATCH':
+        return "Please fill out the form!"
+    return "What you getting at?"
+
 '''
 # Delete account.
 @app.route('/users/<id>', methods=['DELETE'])
