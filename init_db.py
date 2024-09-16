@@ -47,7 +47,7 @@ def table_setup(conn):
     cur.execute(
         "CREATE TABLE users (id SERIAL PRIMARY KEY,"
         "email VARCHAR(255) UNIQUE NOT NULL,"
-        "password VARCHAR(255) NOT NULL,"
+        "password_hash VARCHAR(255) NOT NULL,"
         "date_added DATE DEFAULT CURRENT_TIMESTAMP);"
     )
     '''
@@ -98,7 +98,7 @@ def table_populate(conn):
     # Insert data into the table
     # Populate users
     cur.executemany(
-        "INSERT INTO users (email, password)"
+        "INSERT INTO users (email, password_hash)"
         "VALUES (%s, %s)",
         [("Chad Greg Paul Thompson", "ChatGPT"),
          ("Anonymous NoLastName", "SecretPassword"),

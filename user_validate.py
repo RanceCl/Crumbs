@@ -12,6 +12,10 @@ def is_email_valid(email):
         # email is not valid, exception message is human-readable
         return str(e), False
 
+# Make sure that the passwords match.
+def do_passwords_match(password1, password2):
+    return password1 == password2
+
 # Make sure that inputted password follows desired format. Flag if invalid.
 def is_password_valid(password):
     # Make sure password is between 
