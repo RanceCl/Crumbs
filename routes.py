@@ -178,7 +178,7 @@ def add_user(email, password):
     db.session.commit()
 
 
-@app.route('/populate_users')
+@app.route('/populate_users', methods=['GET','POST'])
 def populate_users():
     Users.query.delete()
     add_user("chadgregpaulthompson@gmail.com", "Ch@t3PT")
