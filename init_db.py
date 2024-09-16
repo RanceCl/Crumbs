@@ -94,7 +94,7 @@ def table_setup(conn):
 def table_populate(conn):
     # Open a cursor to perform database operations
     cur = conn.cursor()
-
+    '''
     # Insert data into the table
     # Populate users
     cur.executemany(
@@ -104,6 +104,7 @@ def table_populate(conn):
          ("Anonymous NoLastName", "SecretPassword"),
          ("Know HasLastName", "SeenPassword")]
     )
+    '''
     '''
     # Populate customers
     cur.executemany(

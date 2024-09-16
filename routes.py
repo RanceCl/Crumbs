@@ -1,6 +1,6 @@
 from flask import request
 from flask_login import current_user, login_user, login_required, logout_user
-from flask_cors import CORS
+# from flask_cors import CORS
 
 from models import Users
 import user_validate
@@ -170,3 +170,20 @@ def change_password():
 def delete():
     return "User deleted!"
 '''
+
+def add_user(email, password):
+    new_user = Users(email=email)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+
+
+@app.route('/populate_users')
+def populate_users():
+    Users.query.delete()
+    add_user("chadgregpaulthompson@gmail.com", "Ch@t3PT")
+    add_user("anonymous@email.com", "S3cr3t P@$$word")
+    add_user("known@email.com", "S33n P@$$word")
+
+    return "Table populated"
+    # return redirect(url_for('login'))
