@@ -113,7 +113,7 @@ def get_user_inventory():
     return {cookie_name: count for cookie_name, count in inventory}
 
 # Edit inventory
-@app.route('/users/inventory', methods=['POST'])
+@app.route('/users/inventory', methods=['POST', 'PATCH'])
 @login_required
 def set_user_inventory():
     if ('cookie_name' in request.form
