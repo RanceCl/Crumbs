@@ -134,6 +134,7 @@ def set_user_inventory():
                 user_id=current_user.id, 
                 cookie_id=cookie.id, 
                 inventory=inventory)
+            db.session.add(cookie_inventory)
             db.session.commit()
             return cookie_name + " added to inventory table! You have " + inventory + " in stock! :D"
         cookie_inventory.inventory = inventory
@@ -141,6 +142,23 @@ def set_user_inventory():
         return cookie_name + " inventory updated! You have " + inventory + " in stock! :D"
     return "Please fill out the form!"
 
+# Delete inventory
+@app.route('/users/inventory', methods=['DELETE'])
+@login_required
+def delete_user_inventory():
+    if ('cookie_name' in request.form):
+        cookie_name = request.form.get("cookie_name")
+        
+        cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
+        
+        # Ensure that the cookie exists.
+        if not cookie:
+            return "I'm sorry, " + cookie_name + " doesn't exist. :("
+        
+        Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie.id).delete()
+        db.session.commit()
+        return cookie_name + " deleted! :D"
+    return "Please fill out the form!"
 
 # Show account based on id.
 @app.route('/users', methods=['GET'])
