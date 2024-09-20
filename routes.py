@@ -1,9 +1,8 @@
-from flask import request
+from flask import request, jsonify
 from flask_login import current_user, login_user, login_required, logout_user
 from flask_cors import CORS
 
-from models import Users
-import user_validate
+from models import Users, Cookies, Cookie_Inventory
 import psycopg2
 
 from app import app, db, login_manager
@@ -27,24 +26,24 @@ def register():
 
         # Retreive and validate email
         email = request.form.get("email")
-        email, email_valid = user_validate.is_email_valid(email)
-        if not email_valid: 
-            return email
+        
         if Users.query.filter_by(email=email).first():
             return "Account with this email already exists!"
         
-        # Retrieve and validate password
-        password = request.form.get("password")
-        password_confirm = request.form.get("password_confirm")
-        if not user_validate.do_passwords_match(password, password_confirm):
-            return "Passwords should match!"
-        password, password_valid = user_validate.is_password_valid(password)
-        if not password_valid: 
-            return password
+        new_user = Users()
+
+        # Validate and set email
+        email_flag = new_user.set_email(email)
+        if email_flag: 
+            return email_flag
         
-        # Hash password
-        new_user = Users(email=email)
-        new_user.set_password(password)
+        # Retrieve and validate password
+        password_flag = new_user.set_password(
+            request.form.get("password"), 
+            request.form.get("password_confirm"))
+        if password_flag: 
+            return password_flag
+        
         db.session.add(new_user)
         db.session.commit()
         return "New user added"
@@ -71,6 +70,8 @@ def login():
             return "Password is incorrect. Please try again."
         else:
             login_user(user)
+            # Update their cookies.
+            # user.update_cookie_inventory()
             return "Welcome back!"
     elif request.method == 'POST':
         return "Please fill out the form!"
@@ -91,12 +92,64 @@ def create():
     return db_methods.user_create(email, password)
 '''
 
+# Show cookie information
+@app.route('/cookie/<cookie_name>', methods=['GET'])
+def cookie_read(cookie_name):
+    cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
+    if not cookie:
+        return "I'm sorry, " + cookie_name + " doesn't exist. :("
+    return {'id': cookie.id, 
+            'name': cookie.cookie_name, 
+            'price': cookie.price, 
+            'description': cookie.description, 
+            'picture': cookie.picture_url}
+
+# Retrieve inventory
+@app.route('/users/inventory', methods=['GET'])
+@login_required
+def get_user_inventory():
+    inventory = db.session.query(Cookies.cookie_name, Cookie_Inventory.inventory).join(Cookie_Inventory).filter(Cookie_Inventory.user_id == current_user.id).all()
+    # inventory = Cookies.query.join(Cookie_Inventory).filter(Cookie_Inventory.user_id == current_user.id).all()
+    return {cookie_name: count for cookie_name, count in inventory}
+
+# Edit inventory
+@app.route('/users/inventory', methods=['POST'])
+@login_required
+def set_user_inventory():
+    if ('cookie_name' in request.form
+        and 'inventory' in request.form):
+        cookie_name = request.form.get("cookie_name")
+        inventory=request.form.get("inventory")
+
+        cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
+        
+        # Ensure that the cookie exists.
+        if not cookie:
+            return "I'm sorry, " + cookie_name + " doesn't exist. :("
+        
+        cookie_inventory = Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie.id).first()
+        # If the cookie exists, but no count does, then add it to the table.
+        if not cookie_inventory: 
+            cookie_inventory = Cookie_Inventory(
+                user_id=current_user.id, 
+                cookie_id=cookie.id, 
+                inventory=inventory)
+            db.session.commit()
+            return cookie_name + " added to inventory table! You have " + inventory + " in stock! :D"
+        cookie_inventory.inventory = inventory
+        db.session.commit()
+        return cookie_name + " inventory updated! You have " + inventory + " in stock! :D"
+    return "Please fill out the form!"
+
+
 # Show account based on id.
 @app.route('/users', methods=['GET'])
 @login_required
 def read():
     #current_user.email
-    return {'id': current_user.id, 'email': current_user.email, 'password': current_user.password_hash}
+    return {'id': current_user.id, 
+            'email': current_user.email, 
+            'password': current_user.password_hash}
     #return db_methods.user_read_by_id(id)
 
 # Update account email.
@@ -116,11 +169,12 @@ def change_email():
 
         # Retreive and validate new email
         new_email = request.form.get("new_email")
-        new_email, email_valid = user_validate.is_email_valid(new_email)
-        if not email_valid: 
-            return new_email
         if Users.query.filter_by(email=new_email).first():
             return "Account with this email already exists!"
+        
+        email_flag = current_user.set_email(new_email)
+        if email_flag: 
+            return email_flag
         
         # Change email
         current_user.email = new_email
@@ -149,14 +203,11 @@ def change_password():
         # Retrieve and validate new password
         new_password = request.form.get("new_password")
         new_password_confirm = request.form.get("new_password_confirm")
-        if not user_validate.do_passwords_match(new_password, new_password_confirm):
-            return "Passwords should match!"
-        new_password, password_valid = user_validate.is_password_valid(new_password)
-        if not password_valid: 
-            return new_password
+
+        password_flag = current_user.set_password(new_password, new_password_confirm)
+        if password_flag: 
+            return password_flag
         
-        # Change password
-        current_user.set_password(new_password)
         db.session.commit()
         return "Password changed!"
     elif request.method == 'PATCH':
@@ -172,10 +223,11 @@ def delete():
 '''
 
 def add_user(email, password):
+    password_confirm = password
     new_user = Users(email=email)
-    new_user.set_password(password)
-    db.session.add(new_user)
-    db.session.commit()
+    if not new_user.set_password(password, password_confirm):
+        db.session.add(new_user)
+        db.session.commit()
 
 
 @app.route('/populate_users', methods=['GET','POST'])

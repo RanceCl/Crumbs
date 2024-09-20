@@ -40,8 +40,8 @@ def table_setup(conn):
     # Open a cursor to perform database operations
     cur = conn.cursor()
 
-    # Create a new table of users, customers and cookies
-    cur.execute("DROP TABLE IF EXISTS users, customers, cookies, orders, carted_cookies;")
+    # Create a new table of user, customer and cookie
+    cur.execute("DROP TABLE IF EXISTS users, customer, cookies, orders, carted_cookies;")
     
     # Table for users
     cur.execute(
@@ -50,10 +50,29 @@ def table_setup(conn):
         "password_hash VARCHAR(255) NOT NULL,"
         "date_added DATE DEFAULT CURRENT_TIMESTAMP);"
     )
+    
+    # Table for cookies
+    cur.execute(
+        "CREATE TABLE cookies (id SMALLSERIAL PRIMARY KEY,"
+        "cookie_name VARCHAR(50) NOT NULL,"
+        "description VARCHAR(255) NOT NULL DEFAULT '',"
+        "price FLOAT NOT NULL DEFAULT 0,"
+        "picture_url VARCHAR(255) NOT NULL DEFAULT '');"
+    )
+
+    # Table for cookie inventory
+    cur.execute(
+        "CREATE TABLE cookie_inventory (user_id INT NOT NULL,"
+        "cookie_id SMALLINT NOT NULL,"
+        "inventory INT NOT NULL DEFAULT 0,"
+        "PRIMARY KEY (user_id, cookie_id),"
+        "FOREIGN KEY (user_id) REFERENCES users(id),"
+        "FOREIGN KEY (cookie_id) REFERENCES cookies(id));"
+    )
     '''
     # Table for customers
     cur.execute(
-        "CREATE TABLE customers (id SERIAL PRIMARY KEY,"
+        "CREATE TABLE customer (id SERIAL PRIMARY KEY,"
         "first_name VARCHAR(255) NOT NULL,"
         "last_name VARCHAR(255) NOT NULL,"
         "user_id INT NOT NULL,"
@@ -70,7 +89,7 @@ def table_setup(conn):
         "picture_id SMALLINT NOT NULL);"
     )
 
-    # Table for orders
+    # Table for order
     cur.execute(
         "CREATE TABLE orders (id SERIAL PRIMARY KEY,"
         "customer_id INT NOT NULL,"
@@ -94,6 +113,48 @@ def table_setup(conn):
 def table_populate(conn):
     # Open a cursor to perform database operations
     cur = conn.cursor()
+
+    # Populate cookies
+    cur.executemany(
+        "INSERT INTO cookies (cookie_name, price, description, picture_url)"
+        "VALUES (%s, %s, %s, %s)",
+        [("Adventurefuls", 6,
+          "Indulgent brownie-inspired cookies topped with caramel flavored crème with a hint of sea salt.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage.coreimg.png/1693317691596/meetthecookies-graphics-hybridadventurefuls-255x255.png"),
+         ("Caramel Chocolate Chip", 6, 
+          "Gluten free! Chewy cookies with rich caramel, semisweet chocolate chips, and a hint of sea salt.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy.coreimg.png/1688655459226/21-marcomm-meetthecookies-graphics-abccaramelchocolatechip-255x255.png"),
+         ("Caramel deLites", 6, 
+          "Crisp cookies with caramel, coconut, and chocolaty stripes .",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1168943426.coreimg.png/1693315719665/meetthecookies-graphics-hybridsamoascarameldelites-255x255.png"),
+         ("Peanut Butter Sandwich | Do-si-dos", 6, 
+          "Crunchy oatmeal sandwich cookies with peanut butter filling.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1034315555.coreimg.png/1725455442556/meetthecookies-graphics-hybridpeanutbuttersandwichdosidos-255x255.png"),
+         ("Girl Scout S'mores", 6, 
+          "Crunchy graham sandwich cookies with chocolate and marshmallow filling.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1756629764.coreimg.png/1693315770522/meetthecookies-graphics-lbbsmores-255x255.png"),
+         ("Lemonades", 6, 
+          "Savory, refreshing shortbread cookies topped with a tangy lemon-flavored icing.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_973166062.coreimg.png/1688655543113/meetthecookies-graphics-abclemonades-255x255.png"),
+         ("Lemon-Ups", 6, 
+          "Crispy lemon cookies baked with inspiring messages.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1787644668.coreimg.png/1693315792917/meetthecookies-graphics-lbblemonups-255x255.png"),
+         ("Peanut Butter Patties", 6, 
+          "Crispy cookies layered with peanut butter and covered with a chocolaty coating.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_435681049.coreimg.png/1693315815634/meetthecookies-graphics-hybridpeanutbutterpattiestagalongs-255x255.png"),
+         ("Thin Mints", 6, 
+          "Crisp, chocolate cookies dipped in a delicious mint chocolaty coating.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1574458209.coreimg.png/1693315839299/meetthecookies-graphics-hybridthinmints-255x255.png"),
+         ("Toast-Yays", 6, 
+          "Yummy toast-shaped cookies full of French toast flavor and dipped in delicious icing.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1639980537.coreimg.png/1693230514183/meetthecookies-graphics-abctoast-yay-255x255.png"),
+         ("Toffee-tastic", 6, 
+          "Gluten free! Rich, buttery cookies with sweet, crunchy toffee bits.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_1157222513.coreimg.png/1693316248715/meetthecookies-graphics-lbbtoffeetastic-255x255.png"),
+         ("Trefoils", 6, 
+          "Iconic shortbread cookies inspired by the original Girl Scout Cookie recipe.",
+          "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_750886972.coreimg.png/1713984333162/meetthecookies-graphics-hybridshortbreadtrefoils-255x255.png")]
+    )
     '''
     # Insert data into the table
     # Populate users
@@ -108,14 +169,14 @@ def table_populate(conn):
     '''
     # Populate customers
     cur.executemany(
-        "INSERT INTO customers (first_name, last_name, user_id)"
+        "INSERT INTO customer (first_name, last_name, user_id)"
         "VALUES (%s, %s, %s)",
         [("Leanne", "Lee", 3),
          ("Dave", "", 1),
          ("Dave", "Again", 2)]
     )
         
-     # Populate cookies
+    # Populate cookie
     cur.executemany(
         "INSERT INTO cookies (cookie_name, picture_id)"
         "VALUES (%s, %s)",
