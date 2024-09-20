@@ -52,30 +52,26 @@ def register():
         return "Please fill out the form!"
     return "What you getting at?"
 
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['POST'])
 def login():
     if current_user.is_authenticated:
-        return "You are already logged in!"
-    if (request.method == 'POST' 
-        and 'email' in request.form 
-        and 'password' in request.form):
+        return jsonify({'status': 'error', 'message': 'You are already logged in!'}), 400
+    if 'email' in request.form and 'password' in request.form:
         email = request.form.get("email")
         password = request.form.get("password")
         user = Users.query.filter_by(email=email).first()
         
         # Validate user existence and that password matches
         if user is None: 
-            return "Account with this email doesn't exist. Please try again."
+            return jsonify({'status': 'error', 'message': 'Account with this email doesn\'t exist.'}), 400
         elif not user.check_password(password):
-            return "Password is incorrect. Please try again."
+            return jsonify({'status': 'error', 'message': 'Password is incorrect.'}), 400
         else:
             login_user(user)
             # Update their cookies.
             # user.update_cookie_inventory()
-            return "Welcome back!"
-    elif request.method == 'POST':
-        return "Please fill out the form!"
-    return "What you getting at?"
+            return jsonify({'status': 'success', 'message': 'Welcome back!'}), 200
+    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
 @app.route('/logout')
 @login_required
@@ -169,6 +165,17 @@ def read():
             'email': current_user.email, 
             'password': current_user.password_hash}
     #return db_methods.user_read_by_id(id)
+
+#Use Flask-Login to get current user
+@app.route('/current-user', methods=['GET'])
+@login_required
+def get_current_user():
+    if current_user.is_authenticated:
+        return jsonify({
+            'id': current_user.id,
+            'email': current_user.email,
+        }), 200
+    return jsonify({'error': 'User not authenticated'}), 401    
 
 # Update account email.
 @app.route('/users/change_email', methods=['GET','PATCH'])
