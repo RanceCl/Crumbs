@@ -6,7 +6,7 @@ def create_initial_db():
     conn = psycopg2.connect(
             host="localhost",
             database="postgres",
-            user="postgres",
+            user="annclawson",
             password="postgres")
     conn.autocommit = True
 
@@ -31,7 +31,7 @@ def connect_to_db():
     conn = psycopg2.connect(
             host="localhost",
             database="crumbs_db",
-            user="postgres",
+            user="annclawson",
             password="postgres")
     return conn
 
