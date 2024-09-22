@@ -73,11 +73,11 @@ def login():
             return jsonify({'status': 'success', 'message': 'Welcome back!'}), 200
     return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
-    return "Logged Out"
+    return "Logged Out", 200
 
 '''
 @app.route('/users', methods=['POST'])
