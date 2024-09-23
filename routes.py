@@ -88,7 +88,26 @@ def create():
     return db_methods.user_create(email, password)
 '''
 
-# Show cookie information
+#Get all of the cookies
+@app.route('/cookies', methods=['GET'])
+def get_all_cookies():
+    cookies = Cookies.query.all()
+    if not cookies:
+        return {"message": "No cookies found."}, 404
+
+    cookies_list = [
+        {
+            'id': cookie.id,
+            'name': cookie.cookie_name,
+            'price': cookie.price,
+            'description': cookie.description,
+            'picture': cookie.picture_url
+        }
+        for cookie in cookies
+    ]
+    return {'cookies': cookies_list}, 200
+
+# Show single cookie information
 @app.route('/cookie/<cookie_name>', methods=['GET'])
 def cookie_read(cookie_name):
     cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
