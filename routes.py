@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_login import current_user, login_user, login_required, logout_user
 from flask_cors import CORS
 
-from models import Users, Cookies, Cookie_Inventory
+from models import Users, Orders, Customers, Cookies, Cookie_Inventory, Cookie_Orders
 import psycopg2
 
 from app import app, db, login_manager
@@ -17,12 +17,15 @@ def loader_user(user_id):
 def home():
     return "That's the way the cookie crumbles!"
 
+# ----------------------------------------- Auth -----------------------------------------
 @app.route('/register', methods=['GET','POST'])
 def register():
     if (request.method == 'POST' 
         and 'email' in request.form 
         and 'password' in request.form 
-        and 'password_confirm' in request.form):
+        and 'password_confirm' in request.form
+        and 'first_name' in request.form
+        and 'last_name' in request.form):
 
         # Retreive and validate email
         email = request.form.get("email")
@@ -30,7 +33,9 @@ def register():
         if Users.query.filter_by(email=email).first():
             return "Account with this email already exists!"
         
-        new_user = Users()
+        new_user = Users(first_name=request.form.get("first_name"),
+                         last_name=request.form.get("last_name"))
+        
 
         # Validate and set email
         email_flag = new_user.set_email(email)
@@ -87,7 +92,7 @@ def create():
     password = request.form.get("password")
     return db_methods.user_create(email, password)
 '''
-
+# ----------------------------------------- COOKIES -----------------------------------------
 #Get all of the cookies
 @app.route('/cookies', methods=['GET'])
 def get_all_cookies():
@@ -119,6 +124,7 @@ def cookie_read(cookie_name):
             'description': cookie.description, 
             'picture': cookie.picture_url}
 
+# ----------------------------------------- Inventory -----------------------------------------
 # Retrieve inventory
 @app.route('/users/inventory', methods=['GET'])
 @login_required
@@ -175,6 +181,82 @@ def delete_user_inventory():
         return cookie_name + " deleted! :D"
     return "Please fill out the form!"
 
+
+
+# ----------------------------------------- Customers -----------------------------------------
+# Retrieve customers
+@app.route('/customers', methods=['GET'])
+@login_required
+def get_customer_list():
+    # User.query.join(Skill).filter(Skill.skill == skill_name).all()
+    customers = Customers.query.filter_by(user_id=current_user.id).all()
+    result = []
+    for customer in customers:
+        result.append({
+            "id": customer.id,
+            "first_name": customer.first_name,
+            "last_name": customer.last_name,
+            'user_id': customer.user_id
+        })
+    return {"customers": result}, 200
+
+# Create customer
+@app.route('/customers', methods=['POST'])
+@login_required
+def add_customer():
+    if ('first_name' in request.form
+        and 'last_name' in request.form):
+        first_name=request.form.get("first_name")
+        last_name=request.form.get("last_name")
+        new_customer = Customers(first_name=first_name,
+                                 last_name=last_name,
+                                 user_id=current_user.id)
+        db.session.add(new_customer)
+        db.session.commit()
+
+        return first_name + " " + last_name + " added as a customer!"
+    return "Please fill out the form!"
+
+# Show customers based on id.
+@app.route('/customers/<id>', methods=['GET'])
+@login_required
+def read_customer(id):
+    customer = Customers.query.filter_by(id=id, user_id=current_user.id).first()
+    if not customer:
+        return "I'm sorry, " + id + " doesn't exist. :("
+    return {'id': customer.id, 
+            'first_name': customer.first_name, 
+            'last_name': customer.last_name, 
+            'user_id': customer.user_id}
+
+# Update customers based on id.
+@app.route('/customers/<id>', methods=['PATCH'])
+@login_required
+def update_customer(id):
+    if ('first_name' in request.form
+        and 'last_name' in request.form):
+        customer = Customers.query.filter_by(id=id, user_id=current_user.id).first()
+        if not customer:
+            return "I'm sorry, " + id + " doesn't exist. :("
+        customer.first_name =request.form.get("first_name")
+        customer.last_name =request.form.get("last_name")
+        db.session.commit()
+        return {'id': customer.id, 
+                'first_name': customer.first_name, 
+                'last_name': customer.last_name, 
+                'user_id': customer.user_id}
+    return "Please fill out the form!"
+
+# Delete customers based on id.
+@app.route('/customers/<id>', methods=['DELETE'])
+@login_required
+def delete_customer(id):
+    Customers.query.filter_by(id=id, user_id=current_user.id).delete()
+    db.session.commit()
+    return id + " deleted! :D"
+
+
+# ----------------------------------------- User Info -----------------------------------------
 # Show account based on id.
 @app.route('/users', methods=['GET'])
 @login_required
@@ -265,21 +347,54 @@ def change_password():
 def delete():
     return "User deleted!"
 '''
-
-def add_user(email, password):
+# ----------------------------------------- Dev Tests -----------------------------------------
+def add_user(email, password, first_name, last_name):
     password_confirm = password
-    new_user = Users(email=email)
+    new_user = Users(email=email, first_name=first_name, last_name=last_name)
     if not new_user.set_password(password, password_confirm):
         db.session.add(new_user)
         db.session.commit()
+    return None
 
+def add_customer(first_name, user_id):
+    new_customer = Customers(first_name=first_name,
+                            last_name=first_name,
+                            user_id=user_id)
+    #current_user.append(new_customer)
+    db.session.add(new_customer)
+    db.session.commit()
+    return None
 
 @app.route('/populate_users', methods=['GET','POST'])
 def populate_users():
     Users.query.delete()
-    add_user("chadgregpaulthompson@gmail.com", "Ch@t3PT")
-    add_user("anonymous@email.com", "S3cr3t P@$$word")
-    add_user("known@email.com", "S33n P@$$word")
+    add_user("chadgregpaulthompson@gmail.com", "Ch@t3PT", "Chad", "GPT")
+    add_user("anonymous@email.com", "S3cr3t P@$$word", "Anonymous", "NoLastName")
+    add_user("known@email.com", "S33n P@$$word", "Known", "HasLastName")
+    add_user("elmo@email.com", "B33G B1rd$", "Elmo", "Sesame")
+    
 
     return "Table populated"
     # return redirect(url_for('login'))
+
+@app.route('/populate_customers', methods=['GET','POST'])
+def populate_customers():
+    Customers.query.delete()
+    add_customer("Chad", 1)
+    add_customer("Jim", 2)
+    add_customer("Known", 3)
+    add_customer("Jane", 4)
+    add_customer("Don", 1)
+    add_customer("Abe", 2)
+    add_customer("Corey", 3)
+    add_customer("Linda", 4)
+    add_customer("Leen", 1)
+    add_customer("Noni", 2)
+    add_customer("Chi-Chi", 3)
+    add_customer("Best", 4)
+    add_customer("Midnight", 1)
+    add_customer("Marley", 2)
+    add_customer("Known", 3)
+    add_customer("Chad", 4)
+
+    return "Customers populated"

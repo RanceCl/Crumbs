@@ -8,7 +8,10 @@ class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String, nullable=False)
+    first_name = db.Column(db.String, nullable=False)
+    last_name = db.Column(db.String, nullable=False)
     cookies = db.relationship('Cookie_Inventory', back_populates = 'users')
+    customers = db.relationship('Customers', back_populates = 'users')
 
     def set_email(self, email):
         # Make sure that email is in a valid format.
@@ -47,6 +50,16 @@ class Users(db.Model, UserMixin):
                 db.session.add(new_cookie_inventory)
         db.session.commit()
 
+    # Retrieve Current User's Customers
+    def retrieve_customer_list(self):
+        return self.customers
+    
+    # Read a single customer
+    def retrieve_customer(self, id):
+        return Customers.query.filter_by(id=id, user_id=self.id).first()
+
+
+
 class Cookies(db.Model):
     __tablename__ = 'cookies'
     id = db.Column(db.SmallInteger, primary_key=True)
@@ -55,22 +68,67 @@ class Cookies(db.Model):
     price = db.Column(db.String, nullable=False, default=0)
     picture_url = db.Column(db.String, nullable=False, default='')
     users = db.relationship('Cookie_Inventory', back_populates = 'cookies')
+    orders = db.relationship('Cookie_Orders', back_populates = 'cookies')
+
+class Customers(db.Model):
+    __tablename__ = 'customers'
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String, nullable=False)
+    last_name = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    users = db.relationship('Users', back_populates='customers', cascade="all, delete")
+    orders = db.relationship('Orders', back_populates='customers')
+    
+    def __init__(self, first_name, last_name, user_id):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.user_id = user_id
+
+
+class Orders(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
+    payment_id = db.Column(db.Integer)
+    cost = db.Column(db.Integer, nullable=False, default=0)
+    
+    customers = db.relationship('Customers', back_populates='orders', cascade="all, delete")
+    cookies = db.relationship('Cookie_Orders', back_populates = 'orders', cascade="all, delete")
+
+    def __init__(self, customer_id, payment_id):
+        self.customer_id = customer_id
+        self.payment_id = payment_id
+        self.cost = 0
 
 class Cookie_Inventory(db.Model):
     __tablename__ = 'cookie_inventory'
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     cookie_id = db.Column(db.SmallInteger, db.ForeignKey('cookies.id'), primary_key=True)
     inventory = db.Column(db.Integer, nullable=False, default=0)
-    users = db.relationship('Users', back_populates='cookies')
-    cookies = db.relationship('Cookies', back_populates = 'users')
+    users = db.relationship('Users', back_populates='cookies', cascade="all, delete")
+    cookies = db.relationship('Cookies', back_populates = 'users', cascade="all, delete")
 
     def __init__(self, user_id, cookie_id, inventory):
         self.user_id = user_id
         self.cookie_id = cookie_id
         self.inventory = inventory
 
-# https://stackoverflow.com/questions/35795717/flask-sqlalchemy-many-to-many-relationship-with-extra-field
-# https://medium.com/@beckerjustin3537/creating-a-many-to-many-relationship-with-flask-sqlalchemy-69018d467d36
+class Cookie_Orders(db.Model):
+    __tablename__ = 'cookie_orders'
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), primary_key=True)
+    cookie_id = db.Column(db.Integer, db.ForeignKey('cookies.id'), primary_key=True)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    cost = db.Column(db.Integer, nullable=False, default=0)
+    orders = db.relationship('Orders', back_populates='cookies', cascade="all, delete")
+    cookies = db.relationship('Cookies', back_populates = 'orders', cascade="all, delete")
+    
+    def __init__(self, order_id, cookie_id):
+        self.order_id = order_id
+        self.cookie_id = cookie_id
+        self.quantity = 0
+        self.cost = 0
+
 if __name__ == "__main__":
     # Run this file directly to create the database tables.
     print("Creating database tables...")

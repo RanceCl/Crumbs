@@ -1,13 +1,16 @@
+import os
 import sys
 import psycopg2
+import load_env_var
+#from load_env_var import pgBase
 
 # Make sure database exists.
 def create_initial_db():
     conn = psycopg2.connect(
             host="localhost",
             database="postgres",
-            user="annclawson",
-            password="postgres")
+            user=os.environ["POSTRGRES_USER"],
+            password=os.environ["POSTRGRES_PASSWORD"])
     conn.autocommit = True
 
     # Open a cursor to perform database operations.
@@ -29,10 +32,10 @@ def create_initial_db():
 # Connect to database
 def connect_to_db():
     conn = psycopg2.connect(
-            host="localhost",
-            database="crumbs_db",
-            user="annclawson",
-            password="postgres")
+            host=os.environ["POSTRGRES_HOST"],
+            database=os.environ["POSTRGRES_DATABASE"],
+            user=os.environ["POSTRGRES_USER"],
+            password=os.environ["POSTRGRES_PASSWORD"])
     return conn
 
 # Creating the tables
@@ -48,6 +51,8 @@ def table_setup(conn):
         "CREATE TABLE users (id SERIAL PRIMARY KEY,"
         "email VARCHAR(255) UNIQUE NOT NULL,"
         "password_hash VARCHAR(255) NOT NULL,"
+        "first_name VARCHAR(255) NOT NULL,"
+        "last_name VARCHAR(255) NOT NULL,"
         "date_added DATE DEFAULT CURRENT_TIMESTAMP);"
     )
     
@@ -69,33 +74,37 @@ def table_setup(conn):
         "FOREIGN KEY (user_id) REFERENCES users(id),"
         "FOREIGN KEY (cookie_id) REFERENCES cookies(id));"
     )
-    '''
+    
     # Table for customers
     cur.execute(
-        "CREATE TABLE customer (id SERIAL PRIMARY KEY,"
+        "CREATE TABLE customers (id SERIAL PRIMARY KEY,"
         "first_name VARCHAR(255) NOT NULL,"
         "last_name VARCHAR(255) NOT NULL,"
         "user_id INT NOT NULL,"
-        "date_added DATE DEFAULT CURRENT_TIMESTAMP);"
-    )
-
-    # Table for cookies
-    cur.execute(
-        "CREATE TABLE cookies (id SERIAL PRIMARY KEY,"
-        "cookie_name VARCHAR(50) NOT NULL,"
-        "description VARCHAR(255) NOT NULL DEFAULT '',"
-        "price FLOAT NOT NULL DEFAULT 0,"
-        "inventory_count INT NOT NULL DEFAULT 0,"
-        "picture_id SMALLINT NOT NULL);"
+        "FOREIGN KEY (user_id) REFERENCES users(id));"
     )
 
     # Table for order
     cur.execute(
         "CREATE TABLE orders (id SERIAL PRIMARY KEY,"
         "customer_id INT NOT NULL,"
-        "total INT NOT NULL DEFAULT 0);"
+        "payment_id INT NOT NULL,"
+        "cost INT NOT NULL DEFAULT 0,"
+        "FOREIGN KEY (customer_id) REFERENCES customers(id));"
     )
-    
+
+    # Table for specific cookie amounts in an order
+    cur.execute(
+        "CREATE TABLE order_cookies (order_id INT NOT NULL,"
+        "cookie_id INT NOT NULL,"
+        "quantity INT NOT NULL DEFAULT 0,"
+        "cost INT NOT NULL DEFAULT 0,"
+        "PRIMARY KEY (order_id, cookie_id),"
+        "FOREIGN KEY (order_id) REFERENCES orders(id),"
+        "FOREIGN KEY (cookie_id) REFERENCES cookies(id));"
+    )
+
+    '''
     # Table for carted cookies
     cur.execute(
         "CREATE TABLE carted_cookies (order_id INT NOT NULL,"
