@@ -28,13 +28,12 @@ def register():
         and 'last_name' in request.form):
 
         # Retreive and validate email
-        email = request.form.get("email")
+        email = request.form.get("email").strip().lower()
         
         if Users.query.filter_by(email=email).first():
             return "Account with this email already exists!"
         
-        new_user = Users(first_name=request.form.get("first_name"),
-                         last_name=request.form.get("last_name"))
+        new_user = Users(first_name=request.form.get("first_name").strip().capitalize(), last_name=request.form.get("last_name").strip().capitalize())
         
 
         # Validate and set email
