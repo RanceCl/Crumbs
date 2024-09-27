@@ -83,8 +83,20 @@ def logout():
     logout_user()
     return "Logged Out", 200
 
+#Use Flask-Login to get current user
+@app.route('/current-user', methods=['GET'])
+@login_required
+def get_current_user():
+    if current_user.is_authenticated:
+        return jsonify({
+            'id': current_user.id,
+            'email': current_user.email,
+            'first_name': current_user.first_name,
+            'last_name': current_user.last_name
+        }), 200
+    return jsonify({'error': 'User not authenticated'}), 401 
 
-# Delete customers based on id.
+# Delete users based on id.
 @app.route('/delete_account', methods=['DELETE'])
 @login_required
 def delete_user():
