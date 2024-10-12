@@ -1,7 +1,7 @@
 
-from app import db, bcrypt
+from . import db, bcrypt, login_manager
 from flask_login import UserMixin
-import user_validate
+from . import user_validate
 
 class Users(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -58,7 +58,10 @@ class Users(db.Model, UserMixin):
     def retrieve_customer(self, id):
         return Customers.query.filter_by(id=id, user_id=self.id).first()
 
-
+# User loader for flask-login
+@login_manager.user_loader
+def loader_user(user_id):
+    return Users.query.get(user_id)
 
 class Cookies(db.Model):
     __tablename__ = 'cookies'

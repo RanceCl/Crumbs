@@ -1,3 +1,5 @@
+from app import create_app
+'''
 from flask import Flask
 from flask_login import LoginManager
 from flask_cors import CORS
@@ -16,4 +18,12 @@ db = SQLAlchemy(app)
 if __name__ == '__main__':
     from models import *
     from routes import *
+    app.run(debug=True)
+'''
+
+app = create_app()
+
+if __name__ == '__main__':
+    from app.models import *
+    #from app.routes import *
     app.run(debug=True)
