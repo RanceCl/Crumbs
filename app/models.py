@@ -94,6 +94,7 @@ class Orders(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     payment_id = db.Column(db.Integer)
+    date_added = db.Column(db.Date, default=db.func.current_timestamp())
     cost = db.Column(db.Integer, nullable=False, default=0)
     
     customers = db.relationship('Customers', back_populates='orders')

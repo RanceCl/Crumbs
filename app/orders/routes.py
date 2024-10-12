@@ -34,7 +34,8 @@ def get_orders_list(customer_id=None):
             "customer_first_name": order.customers.first_name,
             "customer_last_name": order.customers.last_name,
             'user_id': order.customers.user_id,
-            'payment_id': order.payment_id
+            'payment_id': order.payment_id,
+            'date_added': order.date_added
         })
     return {"orders": result}, 200
 
@@ -59,7 +60,8 @@ def add_order(customer_id=None):
                 "customer_first_name": order.customers.first_name,
                 "customer_last_name": order.customers.last_name,
                 'user_id': order.customers.user_id,
-                'payment_id': order.payment_id}
+                'payment_id': order.payment_id,
+                'date_added': order.date_added}
     return "Please fill out the form!"
 
 # Show orders based on id.
@@ -74,7 +76,8 @@ def read_order(id, customer_id=None):
             "customer_first_name": order.customers.first_name,
             "customer_last_name": order.customers.last_name,
             'user_id': order.customers.user_id,
-            'payment_id': order.payment_id}
+            'payment_id': order.payment_id,
+            'date_added': order.date_added}
 
 # Update orders based on id.
 @orders.route('/<id>', methods=['PATCH'])
@@ -91,7 +94,8 @@ def update_order(id, customer_id=None):
             "customer_first_name": order.customers.first_name,
             "customer_last_name": order.customers.last_name,
             'user_id': order.customers.user_id,
-            'payment_id': order.payment_id}
+            'payment_id': order.payment_id,
+            'date_added': order.date_added}
 
 # Delete orders based on id.
 @orders.route('/<id>', methods=['DELETE'])

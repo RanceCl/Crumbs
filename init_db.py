@@ -90,6 +90,7 @@ def table_setup(conn):
         "customer_id INT NOT NULL,"
         "payment_id INT NOT NULL,"
         "cost INT NOT NULL DEFAULT 0,"
+        "date_added DATE DEFAULT CURRENT_TIMESTAMP,"
         "FOREIGN KEY (customer_id) REFERENCES customers(id));"
     )
 
