@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_login import current_user, login_required
 from flask_cors import CORS
 
-from ..models import Users, Orders, Customers, Cookies, Cookie_Inventory, Cookie_Orders
+from ..models import Users, Orders, Customers, Cookies, Cookie_Inventory, Order_Cookies
 import psycopg2
 
 from .. import db, login_manager
@@ -35,12 +35,14 @@ def get_orders_list(customer_id=None):
             "customer_last_name": order.customers.last_name,
             'user_id': order.customers.user_id,
             'payment_id': order.payment_id,
+            'total_cost': order.cost,
+            'payment_received': order.payment_received,
             'date_added': order.date_added
         })
     return {"orders": result}, 200
 
 # Add order from order page
-@orders.route('/', methods=['POST', 'PATCH'])
+@orders.route('/', methods=['POST'])
 @login_required
 def add_order(customer_id=None):
     if (('customer_id' in request.form or customer_id)
@@ -61,6 +63,8 @@ def add_order(customer_id=None):
                 "customer_last_name": order.customers.last_name,
                 'user_id': order.customers.user_id,
                 'payment_id': order.payment_id,
+                'total_cost': order.cost,
+                'payment_received': order.payment_received,
                 'date_added': order.date_added}
     return "Please fill out the form!"
 
@@ -77,6 +81,8 @@ def read_order(id, customer_id=None):
             "customer_last_name": order.customers.last_name,
             'user_id': order.customers.user_id,
             'payment_id': order.payment_id,
+            'total_cost': order.cost,
+            'payment_received': order.payment_received,
             'date_added': order.date_added}
 
 # Update orders based on id.
@@ -95,6 +101,8 @@ def update_order(id, customer_id=None):
             "customer_last_name": order.customers.last_name,
             'user_id': order.customers.user_id,
             'payment_id': order.payment_id,
+            'total_cost': order.cost,
+            'payment_received': order.payment_received,
             'date_added': order.date_added}
 
 # Delete orders based on id.

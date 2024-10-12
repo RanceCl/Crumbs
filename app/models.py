@@ -71,7 +71,7 @@ class Cookies(db.Model):
     price = db.Column(db.String, nullable=False, default=0)
     picture_url = db.Column(db.String, nullable=False, default='')
     users = db.relationship('Cookie_Inventory', back_populates = 'cookies', cascade="all, delete-orphan")
-    orders = db.relationship('Cookie_Orders', back_populates = 'cookies', cascade="all, delete-orphan")
+    orders = db.relationship('Order_Cookies', back_populates = 'cookies', cascade="all, delete-orphan")
 
 class Customers(db.Model):
     __tablename__ = 'customers'
@@ -94,11 +94,12 @@ class Orders(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     payment_id = db.Column(db.Integer)
-    date_added = db.Column(db.Date, default=db.func.current_timestamp())
     cost = db.Column(db.Integer, nullable=False, default=0)
+    payment_received = db.Column(db.Integer, nullable=False, default=0)
+    date_added = db.Column(db.Date, default=db.func.current_timestamp())
     
     customers = db.relationship('Customers', back_populates='orders')
-    cookies = db.relationship('Cookie_Orders', back_populates = 'orders', cascade="all, delete-orphan")
+    cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
 
     def __init__(self, customer_id, payment_id):
         self.customer_id = customer_id
@@ -118,8 +119,8 @@ class Cookie_Inventory(db.Model):
         self.cookie_id = cookie_id
         self.inventory = inventory
 
-class Cookie_Orders(db.Model):
-    __tablename__ = 'cookie_orders'
+class Order_Cookies(db.Model):
+    __tablename__ = 'order_cookies'
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), primary_key=True)
     cookie_id = db.Column(db.Integer, db.ForeignKey('cookies.id'), primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)

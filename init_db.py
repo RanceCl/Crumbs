@@ -96,7 +96,7 @@ def table_setup(conn):
 
     # Table for specific cookie amounts in an order
     cur.execute(
-        "CREATE TABLE cookie_orders (order_id INT NOT NULL,"
+        "CREATE TABLE order_cookies (order_id INT NOT NULL,"
         "cookie_id INT NOT NULL,"
         "quantity INT NOT NULL DEFAULT 0,"
         "cost INT NOT NULL DEFAULT 0,"

@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from flask_cors import CORS
 
-from ..models import Users, Orders, Customers, Cookies, Cookie_Inventory, Cookie_Orders
+from ..models import Users, Orders, Customers, Cookies, Cookie_Inventory, Order_Cookies
 import psycopg2
 
 from .. import db
