@@ -89,8 +89,10 @@ def table_setup(conn):
         "CREATE TABLE orders (id SERIAL PRIMARY KEY,"
         "customer_id INT NOT NULL,"
         "payment_id INT NOT NULL,"
-        "cost INT NOT NULL DEFAULT 0,"
+        "payment_received FLOAT NOT NULL DEFAULT 0,"
+        "status INT NOT NULL DEFAULT 0,"
         "date_added DATE DEFAULT CURRENT_TIMESTAMP,"
+        "date_modified DATE DEFAULT CURRENT_TIMESTAMP,"
         "FOREIGN KEY (customer_id) REFERENCES customers(id));"
     )
 
@@ -99,7 +101,6 @@ def table_setup(conn):
         "CREATE TABLE order_cookies (order_id INT NOT NULL,"
         "cookie_id INT NOT NULL,"
         "quantity INT NOT NULL DEFAULT 0,"
-        "cost INT NOT NULL DEFAULT 0,"
         "PRIMARY KEY (order_id, cookie_id),"
         "FOREIGN KEY (order_id) REFERENCES orders(id),"
         "FOREIGN KEY (cookie_id) REFERENCES cookies(id));"

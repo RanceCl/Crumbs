@@ -35,8 +35,4 @@ def cookie_read(cookie_name):
     cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
     if not cookie:
         return "I'm sorry, " + cookie_name + " doesn't exist. :("
-    return {'id': cookie.id, 
-            'name': cookie.cookie_name, 
-            'price': cookie.price, 
-            'description': cookie.description, 
-            'picture': cookie.picture_url}
+    return cookie.to_dict()

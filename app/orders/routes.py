@@ -28,17 +28,7 @@ def get_orders_list(customer_id=None):
         orders = Orders.query.join(Customers).filter_by(user_id=current_user.id).all()
     result = []
     for order in orders:
-        result.append({
-            "id": order.id,
-            "customer_id": order.customer_id,
-            "customer_first_name": order.customers.first_name,
-            "customer_last_name": order.customers.last_name,
-            'user_id': order.customers.user_id,
-            'payment_id': order.payment_id,
-            'total_cost': order.cost,
-            'payment_received': order.payment_received,
-            'date_added': order.date_added
-        })
+        result.append(order.to_dict())
     return {"orders": result}, 200
 
 # Add order from order page
@@ -57,15 +47,7 @@ def add_order(customer_id=None):
         order = Orders(customer_id=customer_id,payment_id=payment_id)
         db.session.add(order)
         db.session.commit()
-        return {"id": order.id,
-                "customer_id": order.customer_id,
-                "customer_first_name": order.customers.first_name,
-                "customer_last_name": order.customers.last_name,
-                'user_id': order.customers.user_id,
-                'payment_id': order.payment_id,
-                'total_cost': order.cost,
-                'payment_received': order.payment_received,
-                'date_added': order.date_added}
+        return order.to_dict()
     return "Please fill out the form!"
 
 # Show orders based on id.
@@ -75,15 +57,7 @@ def read_order(id, customer_id=None):
     order = order_retriever(id, customer_id)
     if not order:
         return "I'm sorry, you don't have an order with id " + id + ". :("
-    return {"id": order.id,
-            "customer_id": order.customer_id,
-            "customer_first_name": order.customers.first_name,
-            "customer_last_name": order.customers.last_name,
-            'user_id': order.customers.user_id,
-            'payment_id': order.payment_id,
-            'total_cost': order.cost,
-            'payment_received': order.payment_received,
-            'date_added': order.date_added}
+    return order.to_dict()
 
 # Update orders based on id.
 @orders.route('/<id>', methods=['PATCH'])
@@ -95,15 +69,7 @@ def update_order(id, customer_id=None):
     order.customer_id = request.form.get("customer_id", order.customer_id) # If no customer_id provided, no change
     order.payment_id = request.form.get("payment_id", order.payment_id)
     db.session.commit()
-    return {"id": order.id,
-            "customer_id": order.customer_id,
-            "customer_first_name": order.customers.first_name,
-            "customer_last_name": order.customers.last_name,
-            'user_id': order.customers.user_id,
-            'payment_id': order.payment_id,
-            'total_cost': order.cost,
-            'payment_received': order.payment_received,
-            'date_added': order.date_added}
+    return order.to_dict()
 
 # Delete orders based on id.
 @orders.route('/<id>', methods=['DELETE'])

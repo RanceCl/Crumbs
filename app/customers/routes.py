@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_login import current_user, login_required
 from flask_cors import CORS
 
-from ..models import Users, Orders, Customers, Cookies, Cookie_Inventory, Order_Cookies
+from ..models import Customers
 import psycopg2
 
 from .. import db
@@ -21,12 +21,7 @@ def get_customer_list():
     customers = Customers.query.filter_by(user_id=current_user.id).all()
     result = []
     for customer in customers:
-        result.append({
-            "id": customer.id,
-            "first_name": customer.first_name,
-            "last_name": customer.last_name,
-            'user_id': customer.user_id
-        })
+        result.append(customer.to_dict())
     return {"customers": result}, 200
 
 # Create customer
@@ -53,10 +48,7 @@ def read_customer(id):
     customer = Customers.query.filter_by(id=id, user_id=current_user.id).first()
     if not customer:
         return "I'm sorry, a customer " + id + " doesn't belong to you. :("
-    return {'id': customer.id, 
-            'first_name': customer.first_name, 
-            'last_name': customer.last_name, 
-            'user_id': customer.user_id}
+    return customer.to_dict()
 
 # Update customers based on id.
 @customers.route('/<id>', methods=['PATCH'])
@@ -70,10 +62,7 @@ def update_customer(id):
         customer.first_name =request.form.get("first_name")
         customer.last_name =request.form.get("last_name")
         db.session.commit()
-        return {'id': customer.id, 
-                'first_name': customer.first_name, 
-                'last_name': customer.last_name, 
-                'user_id': customer.user_id}
+        return customer.to_dict()
     return "Please fill out the form!"
 
 # Delete customers based on id.
