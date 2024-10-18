@@ -143,6 +143,13 @@ class Orders(db.Model):
             ret += prod.price()
         return ret
     
+    def get_order_cookies(self):
+        order_cookies = self.cookies
+        result = []
+        for order_cookie in order_cookies:
+            result.append(order_cookie.to_dict())
+        return result
+    
     def to_dict(self):
         return {
             "id": self.id,
@@ -154,7 +161,8 @@ class Orders(db.Model):
             'payment_received': self.payment_received,
             'date_added': self.date_added,
             'date_modified': self.date_modified,
-            'status': self.status
+            'status': self.status,
+            'order_cookies': self.get_order_cookies()
         }
 
 # Each user's individual cookie count.
@@ -195,7 +203,7 @@ class Order_Cookies(db.Model):
     def to_dict(self):
         return {
             "order_id": self.order_id,
-            "cookie_id": self.cookie_id,
+            "cookie_id": self.cookies.cookie_name,
             "quantity": self.quantity,
             "price": self.price()
         }
