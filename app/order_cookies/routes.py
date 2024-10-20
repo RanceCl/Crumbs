@@ -10,25 +10,6 @@ from .. import db, login_manager
 from . import order_cookies
 
 # ----------------------------------------- Cookie Order_Cookies -----------------------------------------
-# Retrieve order entries belonging to user. 
-@order_cookies.route('/', methods=['GET'])
-@login_required
-def get_user_order_cookies_list():
-    order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter_by(user_id=current_user.id).all()
-    result = []
-    for order_cookie in order_cookies:
-        result.append(order_cookie.to_dict())
-    return {"order_cookies": result}, 200
-
-# Retrieve orders 
-@order_cookies.route('/<order_id>', methods=['GET'])
-@login_required
-def get_order_cookies_list(order_id):
-    order_cookies = Order_Cookies.query.filter_by(order_id=order_id).all()
-    result = []
-    for order_cookie in order_cookies:
-        result.append(order_cookie.to_dict())
-    return {"order_cookies": result}, 200
 
 # Show order cookie
 @order_cookies.route('/<order_id>/<cookie_id>', methods=['GET'])
@@ -56,7 +37,7 @@ def add_order_cookie(order_id, cookie_id):
     # Make sure this entry doesn't already exist
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if order_cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
+        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " already exists."}), 404
 
     order_cookie = Order_Cookies(order_id=order_id, cookie_id=cookie_id, quantity = request.form.get("quantity", 0))
     db.session.add(order_cookie)
@@ -95,4 +76,4 @@ def delete_order_cookie(order_id, cookie_id):
         return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     db.session.delete(order_cookie)
     db.session.commit()
-    return jsonify({"Cookie " + cookie_id + " for order " + order_id + " deleted."}), 200
+    return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " deleted."}), 200
