@@ -245,7 +245,7 @@ class Order_Cookies(db.Model):
     def to_dict(self):
         return {
             "order_id": self.order_id,
-            "cookie_id": self.cookies.cookie_name,
+            "cookie_name": self.cookies.cookie_name,
             "quantity": self.quantity,
             "price": self.price
         }
