@@ -15,9 +15,11 @@ from . import inventory
 @inventory.route('/', methods=['GET'])
 @login_required
 def get_user_inventory():
-    inventory = db.session.query(Cookies.cookie_name, Cookie_Inventory.inventory).join(Cookie_Inventory).filter(Cookie_Inventory.user_id == current_user.id).all()
-    # inventory = Cookies.query.join(Cookie_Inventory).filter(Cookie_Inventory.user_id == current_user.id).all()
-    return {cookie_name: count for cookie_name, count in inventory}
+    cookie_inventory = Cookie_Inventory.query.join(Cookies).filter(Cookie_Inventory.user_id == current_user.id).all()
+    result = {}
+    for inventory in cookie_inventory:
+        result[inventory.cookies.cookie_name] = inventory.projected_inventory
+    return result
 
 # Edit inventory
 @inventory.route('/', methods=['POST', 'PATCH'])

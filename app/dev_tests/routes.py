@@ -97,6 +97,7 @@ def initialize_db():
        'first_name' in request.form and 
        'last_name' in request.form):
         register()
+    populate_inventory()
     populate_customers()
 
     return "Database CREATED!"
@@ -157,6 +158,29 @@ def populate_customers():
             name_index += 1
             
     return "Customers populated"
+
+
+def add_inventory_cookie(user_id, cookie_id, inventory):
+    new_inventory_cookie = Cookie_Inventory(user_id=user_id,
+                                     cookie_id=cookie_id,
+                                     inventory=inventory)
+    db.session.add(new_inventory_cookie)
+    db.session.commit()
+    return new_inventory_cookie.user_id, new_inventory_cookie.cookie_id
+
+# For each order, add a random amount of cookies
+def populate_inventory_cookies(user_id):
+    for i in range(1,12, randrange(1, 6)):
+        add_inventory_cookie(user_id, i, randrange(100, 200))
+    return None
+
+@dev_tests.route('/populate_inventory', methods=['GET','POST'])
+def populate_inventory():
+    user_ids = [id[0] for id in Users.query.with_entities(Users.id).all()]
+    for user_id in user_ids:
+        populate_inventory_cookies(user_id)
+            
+    return "Inventory populated"
 
 def add_user(email, password, first_name, last_name):
     password_confirm = password
