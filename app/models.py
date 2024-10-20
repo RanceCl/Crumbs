@@ -107,16 +107,30 @@ class Customers(db.Model):
             'last_name': self.last_name
         }
 
-class OrderState(IntEnum):
+class OrderStatus(IntEnum):
     UNFINISHED = 0
-    SENT = 100
-    DELIVERED = 101
-    DELAYED = 102
-    PICKED_UP = 102
     PAYMENT_UNCONFIRMED = 200
     PAYMENT_COMPLETE = 201
     PAYMENT_INCOMPLETE = 202
     PAYMENT_INVALID = 203
+    SENT = 300
+    DELIVERED = 301
+    DELAYED = 302
+    PICKED_UP = 400
+
+    def __str__(self):
+        OrderStatusNames={
+            self.UNFINISHED : "Order isn't finished.",
+            self.PAYMENT_UNCONFIRMED : "Payment method unconfirmed.",
+            self.PAYMENT_COMPLETE : "Payment has been complete. Order can now be delivered!",
+            self.PAYMENT_INCOMPLETE : "Payment isn't complete.",
+            self.PAYMENT_INVALID : "Payment method invalid.",
+            self.SENT : "Order has been sent.",
+            self.DELIVERED : "Order has been delivered.",
+            self.DELAYED : "Order is delayed.",
+            self.PICKED_UP : "Order has been picked up."
+        }
+        return OrderStatusNames[self.value]
 
 # Actual orders for the cookies.
 class Orders(db.Model):
@@ -127,7 +141,7 @@ class Orders(db.Model):
     payment_received = db.Column(db.Float, nullable=False, default=0.00)
     date_added = db.Column(db.Date, default=db.func.current_timestamp())
     date_modified = db.Column(db.Date, default=db.func.current_timestamp())
-    status = db.Column(db.Enum(OrderState), nullable=False, default=OrderState.UNFINISHED)
+    status_stored = db.Column(db.Enum(OrderStatus), nullable=False, default=OrderStatus.UNFINISHED)
 
     customers = db.relationship('Customers', back_populates='orders')
     cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
@@ -136,11 +150,38 @@ class Orders(db.Model):
         self.customer_id = customer_id
         self.payment_id = payment_id
     
+    def order_updated(self):
+        self.date_modified = db.func.current_timestamp()
+    
+    @property
+    def status(self):
+        return self.status_stored
+    
+    @status.setter
+    def status(self, new_status):
+        # Order can't be complete if there are no cookies to be ordered.
+        if (not self.cookies) or (new_status == OrderStatus.UNFINISHED):
+            self.status_stored = OrderStatus.UNFINISHED
+        # Payment is unconfirmed if 0.
+        elif int(self.payment_id) == 0:
+            self.status_stored = OrderStatus.PAYMENT_UNCONFIRMED
+        # Payment is invalid if it doesn't exist in the payment ID table
+        # ADD LATER
+        elif int(self.payment_id) == -1:
+            self.status_stored = OrderStatus.PAYMENT_INVALID
+        # Payment is incomplete
+        elif self.payment_received < self.total_cost:
+            self.status_stored = OrderStatus.PAYMENT_INCOMPLETE
+        # Otherwise, the status is decided by the user.
+        else:
+            self.status_stored = new_status
+    
     # Total price of the order.
-    def total(self):
+    @property
+    def total_cost(self):
         ret = 0.00
         for prod in self.cookies:
-            ret += prod.price()
+            ret += prod.price
         return ret
     
     def get_order_cookies(self):
@@ -157,11 +198,11 @@ class Orders(db.Model):
             "customer_first_name": self.customers.first_name,
             "customer_last_name": self.customers.last_name,
             'payment_id': self.payment_id,
-            'total_cost': self.total(),
+            'total_cost': self.total_cost,
             'payment_received': self.payment_received,
             'date_added': self.date_added,
             'date_modified': self.date_modified,
-            'status': self.status,
+            'status': str(self.status),
             'order_cookies': self.get_order_cookies()
         }
 
@@ -196,7 +237,8 @@ class Order_Cookies(db.Model):
 
     orders = db.relationship('Orders', back_populates='cookies')
     cookies = db.relationship('Cookies', back_populates = 'orders')
-        
+    
+    @property
     def price(self):
         return self.quantity * self.cookies.price
     
@@ -205,7 +247,7 @@ class Order_Cookies(db.Model):
             "order_id": self.order_id,
             "cookie_id": self.cookies.cookie_name,
             "quantity": self.quantity,
-            "price": self.price()
+            "price": self.price
         }
 
 if __name__ == "__main__":

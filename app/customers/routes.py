@@ -38,71 +38,71 @@ def add_customer():
         db.session.add(new_customer)
         db.session.commit()
 
-        return first_name + " " + last_name + " added as a customer!"
-    return "Please fill out the form!"
+        return jsonify({"message": first_name + " " + last_name + " added as a customer!"}), 200
+    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
 # Show customers based on id.
-@customers.route('/<id>', methods=['GET'])
+@customers.route('/<customer_id>', methods=['GET'])
 @login_required
-def read_customer(id):
-    customer = Customers.query.filter_by(id=id, user_id=current_user.id).first()
+def read_customer(customer_id):
+    customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
     if not customer:
-        return "I'm sorry, a customer " + id + " doesn't belong to you. :("
-    return customer.to_dict()
+        return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+    return jsonify(customer.to_dict()), 200
 
 # Update customers based on id.
-@customers.route('/<id>', methods=['PATCH'])
+@customers.route('/<customer_id>', methods=['PATCH'])
 @login_required
-def update_customer(id):
+def update_customer(customer_id):
     if ('first_name' in request.form
         and 'last_name' in request.form):
-        customer = Customers.query.filter_by(id=id, user_id=current_user.id).first()
+        customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
         if not customer:
-            return "I'm sorry, a customer " + id + " doesn't belong to you. :("
-        customer.first_name =request.form.get("first_name")
-        customer.last_name =request.form.get("last_name")
+            return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+        customer.first_name = request.form.get("first_name")
+        customer.last_name = request.form.get("last_name")
         db.session.commit()
-        return customer.to_dict()
-    return "Please fill out the form!"
+        return jsonify(customer.to_dict()), 200
+    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
 # Delete customers based on id.
-@customers.route('/<id>', methods=['DELETE'])
+@customers.route('/<customer_id>', methods=['DELETE'])
 @login_required
-def delete_customer(id):
-    customer = Customers.query.filter_by(id=id, user_id=current_user.id).first()
+def delete_customer(customer_id):
+    customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
     if not customer: 
-        return id + " doesn't exist. :("
+        return jsonify({"message": "Customer " + customer_id + " not found."}), 404
     db.session.delete(customer)
     db.session.commit()
-    return id + " deleted! :D"
+    return jsonify({"message": "Customer " + customer_id + " deleted."}), 200
 
 
 # Show customer orders based on id.
-@customers.route('/<id>/orders', methods=['GET'])
+@customers.route('/<customer_id>/orders', methods=['GET'])
 @login_required
-def read_customer_orders(id):
-    return get_orders_list(customer_id=id)
+def read_customer_orders(customer_id):
+    return get_orders_list(customer_id=customer_id)
 
 # Add order to customer
-@customers.route('/<id>/orders', methods=['POST', 'PATCH'])
+@customers.route('/<customer_id>/orders', methods=['POST', 'PATCH'])
 @login_required
-def add_customer_order(id):
-    return add_order(customer_id=id)
+def add_customer_order(customer_id):
+    return add_order(customer_id=customer_id)
 
 # Show customer order based on id.
-@customers.route('/<id>/orders/<order_id>', methods=['GET'])
+@customers.route('/<customer_id>/orders/<order_id>', methods=['GET'])
 @login_required
-def read_customer_order(id, order_id):
-    return read_order(order_id, customer_id=id)
+def read_customer_order(customer_id, order_id):
+    return read_order(order_id, customer_id=customer_id)
 
 # Update customer orders based on id.
-@customers.route('/<id>/orders/<order_id>', methods=['PATCH'])
+@customers.route('/<customer_id>/orders/<order_id>', methods=['PATCH'])
 @login_required
-def update_customer_order(id, order_id):
-    return update_order(order_id, customer_id=id)
+def update_customer_order(customer_id, order_id):
+    return update_order(order_id, customer_id=customer_id)
 
 # Delete customer orders based on id.
-@customers.route('/<id>/orders/<order_id>', methods=['DELETE'])
+@customers.route('/<customer_id>/orders/<order_id>', methods=['DELETE'])
 @login_required
-def delete_customer_order(id, order_id):
-    return delete_order(order_id, customer_id=id)
+def delete_customer_order(customer_id, order_id):
+    return delete_order(order_id, customer_id=customer_id)
