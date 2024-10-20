@@ -239,7 +239,7 @@ class Orders(db.Model):
             "customer_id": self.customer_id,
             "customer_first_name": self.customers.first_name,
             "customer_last_name": self.customers.last_name,
-            'payment_id': self.payment_types.currency_name,
+            'payment_type': self.payment_types.currency_name,
             'total_cost': self.total_cost,
             'payment_received': self.payment_received,
             'date_added': self.date_added,
@@ -278,7 +278,7 @@ class Cookie_Inventory(db.Model):
     def to_dict(self):
         return {
             "user_id": self.user_id,
-            "cookie_id": self.cookie_id,
+            "cookie_name": self.cookies.cookie_name,
             "inventory": self.inventory,
             "projected_inventory": self.projected_inventory
         }
