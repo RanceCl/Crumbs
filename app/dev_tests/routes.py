@@ -2,7 +2,7 @@ from random import randrange
 from flask import request, jsonify
 from flask_cors import CORS
 
-from ..models import Users, Orders, Customers, Cookies, Cookie_Inventory, Order_Cookies
+from ..models import Users, Orders, Payment_Types, Customers, Cookies, Cookie_Inventory, Order_Cookies
 import psycopg2
 
 from .. import db
@@ -63,6 +63,13 @@ cookie_list = [
         "picture_url": "https://www.girlscouts.org/en/cookies/cookie-flavors/_jcr_content/root/container/gridsystem_copy/par_0/textandimage_copy_750886972.coreimg.png/1713984333162/meetthecookies-graphics-hybridshortbreadtrefoils-255x255.png"}
     ]
 
+payment_list = [
+    {"currency_name": "United States Dollar","conversion_to_usd": 1.00},
+    {"currency_name": "Canadian Dollar","conversion_to_usd": 0.72},
+    {"currency_name": "Euro","conversion_to_usd": 1.09},
+    {"currency_name": "Yen","conversion_to_usd": 0.0067}
+]
+
 def create_db():
     """Creates the database."""
     db.create_all()
@@ -88,6 +95,16 @@ def initialize_db():
             description=cookie_entry["description"],
             picture_url=cookie_entry["picture_url"])
         db.session.add(new_cookie)
+        db.session.commit()
+    # Add payments, including default.
+    new_payment_type = Payment_Types(id=0, currency_name="UNSPECIFIED", conversion_to_usd=0.00)
+    db.session.add(new_payment_type)
+    db.session.commit()
+    for payment_entry in payment_list:  
+        new_payment_type = Payment_Types(
+            currency_name=payment_entry["currency_name"],
+            conversion_to_usd=payment_entry["conversion_to_usd"])
+        db.session.add(new_payment_type)
         db.session.commit()
     populate_users()
     # Quickly register for quicker reinitialization of the database.

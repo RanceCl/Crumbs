@@ -83,6 +83,21 @@ class Cookies(db.Model):
             'price': self.price,
             'picture_url': self.picture_url
         }
+    
+class Payment_Types(db.Model):
+    __tablename__ = 'payment_types'
+    id = db.Column(db.Integer, primary_key=True)
+    currency_name = db.Column(db.String(50), unique=True, nullable=False)
+    conversion_to_usd = db.Column(db.Float, nullable=False, default=1.00)
+
+    orders = db.relationship('Orders', back_populates='payment_types', cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'currency_name': self.currency_name,
+            'conversion_to_usd': self.conversion_to_usd
+        }
 
 class Customers(db.Model):
     __tablename__ = 'customers'
@@ -156,7 +171,7 @@ class Orders(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
-    payment_id = db.Column(db.Integer)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment_types.id'))
     payment_received = db.Column(db.Float, nullable=False, default=0.00)
     date_added = db.Column(db.Date, default=db.func.current_timestamp())
     date_modified = db.Column(db.Date, default=db.func.current_timestamp())
@@ -166,6 +181,7 @@ class Orders(db.Model):
     
     customers = db.relationship('Customers', back_populates='orders')
     cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
+    payment_types = db.relationship('Payment_Types', back_populates='orders')
 
     def __init__(self, customer_id, payment_id):
         self.customer_id = customer_id
@@ -223,7 +239,7 @@ class Orders(db.Model):
             "customer_id": self.customer_id,
             "customer_first_name": self.customers.first_name,
             "customer_last_name": self.customers.last_name,
-            'payment_id': self.payment_id,
+            'payment_id': self.payment_types.currency_name,
             'total_cost': self.total_cost,
             'payment_received': self.payment_received,
             'date_added': self.date_added,
@@ -258,22 +274,7 @@ class Cookie_Inventory(db.Model):
         for order_cookie in order_cookies:
             resulting_quantity -= order_cookie.quantity
         return resulting_quantity
-    '''
-    # Inventory when considering orders.
-    @property
-    def projected_inventory(self):
-        ret = self.inventory
-        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter_by(user_id=self.user_id, Order_Cookies.cookie_id = ).all()
-        result = []
-        for order_cookie in order_cookies:
-            result.append(order_cookie.to_dict())
-        Order_Cookies.query.join()
-        Orders.query.join(Customers).filter(Customers.id==customer_id, Orders.id==order_id).first()
-        for order in self.cookies.orders:
-            ret += prod.price
-        return ret
-    '''
-
+    
     def to_dict(self):
         return {
             "user_id": self.user_id,
