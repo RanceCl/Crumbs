@@ -207,12 +207,19 @@ def add_user(email, password, first_name, last_name):
         db.session.commit()
     return None
 
+# @dev_tests.route('/populate_users', methods=['GET','POST'])
+# def populate_users():
+#     add_user("chadgregpaulthompson@gmail.com", "Ch@t3PT", "Chad", "GPT")
+#     add_user("anonymous@email.com", "S3cr3t P@$$word", "Anonymous", "NoLastName")
+#     add_user("known@email.com", "S33n P@$$word", "Known", "HasLastName")
+#     add_user("elmo@email.com", "B33G B1rd$", "Elmo", "Sesame")
+
 @dev_tests.route('/populate_users', methods=['GET','POST'])
 def populate_users():
-    add_user("chadgregpaulthompson@gmail.com", "Ch@t3PT", "Chad", "GPT")
-    add_user("anonymous@email.com", "S3cr3t P@$$word", "Anonymous", "NoLastName")
-    add_user("known@email.com", "S33n P@$$word", "Known", "HasLastName")
-    add_user("elmo@email.com", "B33G B1rd$", "Elmo", "Sesame")
+    add_user("tina@gmail.com", "password123!", "Tina", "Clawson")
+    add_user("eno@email.com", "password123!", "Eno", "Clawson")
+    add_user("waffle@email.com", "password123!", "Waffle", "Denig")
+    add_user("agnes@email.com", "password123!", "Agnes", "Hale")
     
 
     return "Table populated"
