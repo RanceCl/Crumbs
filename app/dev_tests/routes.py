@@ -64,10 +64,10 @@ cookie_list = [
     ]
 
 payment_list = [
-    {"currency_name": "United States Dollar","conversion_to_usd": 1.00},
-    {"currency_name": "Canadian Dollar","conversion_to_usd": 0.72},
-    {"currency_name": "Euro","conversion_to_usd": 1.09},
-    {"currency_name": "Yen","conversion_to_usd": 0.0067}
+    {"payment_type_name": "Cash"},
+    {"payment_type_name": "Credit"},
+    {"payment_type_name": "Venmo"},
+    {"payment_type_name": "PayPal"}
 ]
 
 def create_db():
@@ -97,13 +97,11 @@ def initialize_db():
         db.session.add(new_cookie)
         db.session.commit()
     # Add payments, including default.
-    new_payment_type = Payment_Types(id=0, currency_name="UNSPECIFIED", conversion_to_usd=0.00)
+    new_payment_type = Payment_Types(id=0, payment_type_name="UNSPECIFIED")
     db.session.add(new_payment_type)
     db.session.commit()
     for payment_entry in payment_list:  
-        new_payment_type = Payment_Types(
-            currency_name=payment_entry["currency_name"],
-            conversion_to_usd=payment_entry["conversion_to_usd"])
+        new_payment_type = Payment_Types(payment_type_name=payment_entry["payment_type_name"])
         db.session.add(new_payment_type)
         db.session.commit()
     populate_users()

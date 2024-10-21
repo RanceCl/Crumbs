@@ -87,16 +87,14 @@ class Cookies(db.Model):
 class Payment_Types(db.Model):
     __tablename__ = 'payment_types'
     id = db.Column(db.Integer, primary_key=True)
-    currency_name = db.Column(db.String(50), unique=True, nullable=False)
-    conversion_to_usd = db.Column(db.Float, nullable=False, default=1.00)
+    payment_type_name = db.Column(db.String(50), unique=True, nullable=False)
 
     orders = db.relationship('Orders', back_populates='payment_types', cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
             'id': self.id,
-            'currency_name': self.currency_name,
-            'conversion_to_usd': self.conversion_to_usd
+            'payment_type_name': self.payment_type_name
         }
 
 class Customers(db.Model):
@@ -239,7 +237,7 @@ class Orders(db.Model):
             "customer_id": self.customer_id,
             "customer_first_name": self.customers.first_name,
             "customer_last_name": self.customers.last_name,
-            'payment_type': self.payment_types.currency_name,
+            'payment_type': self.payment_types.payment_type_name,
             'total_cost': self.total_cost,
             'payment_received': self.payment_received,
             'date_added': self.date_added,
