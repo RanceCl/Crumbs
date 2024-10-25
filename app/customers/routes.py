@@ -84,7 +84,7 @@ def read_customer_orders(customer_id):
     return get_orders_list(customer_id=customer_id)
 
 # Add order to customer
-@customers.route('/<customer_id>/orders', methods=['POST', 'PATCH'])
+@customers.route('/<customer_id>/orders', methods=['POST'])
 @login_required
 def add_customer_order(customer_id):
     return add_order(customer_id=customer_id)
