@@ -1,8 +1,8 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 # Loads the environment variables.
-load_dotenv()
+load_dotenv(find_dotenv())
 
 # Returns value from corresponding environment variable key.
 # Returns an error if environment variable isn't present.

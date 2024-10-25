@@ -18,9 +18,12 @@ def get_user_inventory():
     cookie_inventory = Cookie_Inventory.query.join(Cookies).filter(Cookie_Inventory.user_id == current_user.id).all()
     result = {}
     for inventory in cookie_inventory:
+        #result[inventory.cookies.cookie_name] = inventory.projected_inventory
+        
         result[inventory.cookies.cookie_name] = {
-            "actual_inventory": inventory.inventory,
+            "inventory": inventory.inventory,
             "projected_inventory": inventory.projected_inventory}
+        
     return result
 
 # Edit inventory
@@ -30,8 +33,7 @@ def set_user_inventory():
     if ('cookie_name' in request.form
         and 'inventory' in request.form):
         cookie_name = request.form.get("cookie_name")
-        inventory=request.form.get("inventory")
-
+        inventory=int(request.form.get("inventory"))
         cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
         
         # Ensure that the cookie exists.
@@ -47,10 +49,10 @@ def set_user_inventory():
                 inventory=inventory)
             db.session.add(cookie_inventory)
             db.session.commit()
-            return cookie_name + " added to inventory table! You have " + inventory + " in stock! :D"
+            return cookie_name + " added to inventory table! You have " + str(inventory) + " in stock! :D"
         cookie_inventory.inventory = inventory
         db.session.commit()
-        return cookie_name + " inventory updated! You have " + inventory + " in stock! :D"
+        return cookie_name + " inventory updated! You have " + str(cookie_inventory.projected_inventory) + " out of " + str(inventory) + " in stock! :D"
     return "Please fill out the form!"
 
 # Delete inventory
