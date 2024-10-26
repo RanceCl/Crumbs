@@ -185,9 +185,9 @@ def add_user(email, password, first_name, last_name):
 @dev_tests.route('/populate_users', methods=['GET','POST'])
 def populate_users():
     add_user("tina@gmail.com", "password123!", "Tina", "Clawson")
-    add_user("eno@email.com", "password123!", "Eno", "Clawson")
-    add_user("waffle@email.com", "password123!", "Waffle", "Denig")
-    add_user("agnes@email.com", "password123!", "Agnes", "Hale")
+    add_user("eno@gmail.com", "password123!", "Eno", "Clawson")
+    add_user("waffle@gmail.com", "password123!", "Waffle", "Denig")
+    add_user("agnes@gmail.com", "password123!", "Agnes", "Hale")
     
 
     return "Table populated"
