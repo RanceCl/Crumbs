@@ -207,7 +207,7 @@ def initialize_db():
         db.session.add(new_cookie)
         db.session.commit()
     # Add payments, including default.
-    new_payment_type = Payment_Types(id=0, payment_type_name="UNSPECIFIED")
+    new_payment_type = Payment_Types(id=0, payment_type_name="Unspecified")
     db.session.add(new_payment_type)
     db.session.commit()
     for payment_entry in payment_list:  
