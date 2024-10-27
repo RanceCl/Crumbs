@@ -126,8 +126,8 @@ class OrderStatus(IntEnum):
 
     def __str__(self):
         StatusNames={
-            self.UNFINISHED : "Order isn't finished.",
-            self.FINISHED : "Order is finished."
+            self.UNFINISHED : "Incomplete",
+            self.FINISHED : "Complete"
         }
         return StatusNames[self.value]
     
@@ -139,10 +139,10 @@ class PaymentStatus(IntEnum):
     
     def __str__(self):
         StatusNames={
-            self.PAYMENT_UNCONFIRMED : "Payment method unconfirmed.",
-            self.PAYMENT_COMPLETE : "Payment has been complete. Order can now be delivered!",
-            self.PAYMENT_INCOMPLETE : "Payment isn't complete.",
-            self.PAYMENT_INVALID : "Payment method invalid."
+            self.PAYMENT_UNCONFIRMED : "Unconfirmed",
+            self.PAYMENT_COMPLETE : "Complete",
+            self.PAYMENT_INCOMPLETE : "Incomplete",
+            self.PAYMENT_INVALID : "Invalid"
         }
         return StatusNames[self.value]
 
@@ -155,11 +155,11 @@ class DeliveryStatus(IntEnum):
 
     def __str__(self):
         StatusNames={
-            self.NOT_SENT : "Order hasn't been sent.",
-            self.SENT : "Order has been sent.",
-            self.DELIVERED : "Order has been delivered.",
-            self.DELAYED : "Order is delayed.",
-            self.PICKED_UP : "Order has been picked up."
+            self.NOT_SENT : "Not Sent",
+            self.SENT : "Mailed",
+            self.DELIVERED : "Delivered",
+            self.DELAYED : "Delayed",
+            self.PICKED_UP : "Picked Up"
         }
         return StatusNames[self.value]
 
