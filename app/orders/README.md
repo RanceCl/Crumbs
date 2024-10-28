@@ -15,6 +15,7 @@ Adds order for a customer.
 [POST] /orders
 customer_id
 payment_id
+notes
 ```
 ## Show order information
 - Shows order information.
@@ -34,6 +35,7 @@ payment_id
 customer_id
 payment_id
 payment_received
+notes
 order_status
 delivery_status
 ```

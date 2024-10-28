@@ -103,6 +103,7 @@ last_name
 ```
 [POST] /customers/<customer_id>/orders
 payment_id
+notes
 ```
 #### Show customer's order's information
 ```
@@ -113,6 +114,7 @@ payment_id
 [PATCH] /customers/<customer_id>/orders/<order_id>
 payment_id
 payment_received (adds/subtracts from current payment received)
+notes
 order_status [UNFINISHED, FINISHED]
 delivery_status [NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP]
 ```
