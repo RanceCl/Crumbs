@@ -67,18 +67,17 @@ payment_id
 ## Update customer's order's information
 - Updates the information on the order with the order_id belonging to the user with the id in the endpoint. 
 - Only works for orders that belong to the customer.
-- the new `payment_received` will be added or subtracted from the currently stored `payment_received`, depending on if it is positive or negative.
-- `order_status` MUST be one of the following if not None: UNFINISHED, FINISHED
-    - Will not update if no cookies exist in the cookie orders.
+- `payment_status` MUST be one of the following if not None: PAYMENT_UNCONFIRMED, PAYMENT_COMPLETE, PAYMENT_INCOMPLETE, PAYMENT_INVALID.
 - `delivery_status` MUST be one of the following if not None: NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP.
+- `order_status` MUST be one of the following if not None: UNFINISHED, FINISHED.
 - Returns jsonified dictionary with the updated information of the order.
 ```
 [PATCH] /customers/<customer_id>/orders/<order_id>
-customer_id
 payment_id
-payment_received
-order_status
+notes
+payment_status
 delivery_status
+order_status
 ```
 ## Delete customer's order
 - Deletes the entry for the order with the order_id belonging to the user with the id in the endpoint. 

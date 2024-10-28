@@ -113,9 +113,9 @@ notes
 ```
 [PATCH] /customers/<customer_id>/orders/<order_id>
 payment_id
-payment_received (adds/subtracts from current payment received)
 notes
 order_status [UNFINISHED, FINISHED]
+payment_status [PAYMENT_UNCONFIRMED, PAYMENT_COMPLETE, PAYMENT_INCOMPLETE, PAYMENT_INVALID]
 delivery_status [NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP]
 ```
 #### Delete customer's order
@@ -143,8 +143,9 @@ payment_id
 [PATCH] /orders/<order_id>
 customer_id
 payment_id
-payment_received (adds/subtracts from current payment received)
+notes
 order_status [UNFINISHED, FINISHED]
+payment_status [PAYMENT_UNCONFIRMED, PAYMENT_COMPLETE, PAYMENT_INCOMPLETE, PAYMENT_INVALID]
 delivery_status [NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP]
 ```
 #### Delete order

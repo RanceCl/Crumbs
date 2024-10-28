@@ -170,13 +170,12 @@ class Orders(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     payment_id = db.Column(db.Integer, db.ForeignKey('payment_types.id'))
-    payment_received = db.Column(db.Float, nullable=False, default=0.00)
     notes = db.Column(db.String, nullable=False, default='')
     date_added = db.Column(db.Date, default=db.func.current_timestamp())
     date_modified = db.Column(db.Date, default=db.func.current_timestamp())
     order_status_stored = db.Column(db.Enum(OrderStatus), nullable=False, default=OrderStatus.UNFINISHED)
-    payment_status = db.Column(db.Enum(PaymentStatus), nullable=False, default=PaymentStatus.PAYMENT_UNCONFIRMED)
-    delivery_status = db.Column(db.Enum(DeliveryStatus), nullable=False, default=DeliveryStatus.NOT_SENT)
+    payment_status_stored = db.Column(db.Enum(PaymentStatus), nullable=False, default=PaymentStatus.PAYMENT_UNCONFIRMED)
+    delivery_status_stored = db.Column(db.Enum(DeliveryStatus), nullable=False, default=DeliveryStatus.NOT_SENT)
     
     customers = db.relationship('Customers', back_populates='orders')
     cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
@@ -190,33 +189,36 @@ class Orders(db.Model):
     def order_updated(self):
         self.date_modified = db.func.current_timestamp()
     
+    # The getter and setter for the order status.
     @property
     def order_status(self):
         return self.order_status_stored
-    
+
     @order_status.setter
     def order_status(self, new_status):
-        # Order can't be complete if there are no cookies to be ordered.
-        if (not self.cookies) or (new_status == OrderStatus.UNFINISHED):
-            self.order_status_stored = OrderStatus.UNFINISHED
-        # Otherwise, the status is decided by the user.
-        else:
-            self.order_status_stored = OrderStatus.FINISHED
+        if new_status in OrderStatus.__members__:
+            self.order_status_stored = new_status
+
+    # The getter and setter for the payment status.
+    @property
+    def payment_status(self):
+        return self.payment_status_stored
     
-    def payment_status_check(self):
-        # Payment is unconfirmed if 0.
-        if int(self.payment_id) == 0:
-            self.payment_status = PaymentStatus.PAYMENT_UNCONFIRMED
-        # Payment is invalid if it doesn't exist in the payment ID table
-        # ADD LATER
-        elif int(self.payment_id) == -1:
-            self.payment_status = PaymentStatus.PAYMENT_INVALID
-        # Payment is incomplete if the payment made hasn't exceeded the total cost.
-        elif self.payment_received < self.total_cost:
-            self.payment_status = PaymentStatus.PAYMENT_INCOMPLETE
-        # Otherwise, the status is decided by the user.
-        else:
-            self.payment_status = PaymentStatus.PAYMENT_COMPLETE
+    @payment_status.setter
+    def payment_status(self, new_status):
+        if new_status in PaymentStatus.__members__:
+            self.payment_status_stored = new_status
+    
+    # The getter and setter for the payment status.
+    @property
+    def delivery_status(self):
+        return self.delivery_status_stored
+    
+    @delivery_status.setter
+    def delivery_status(self, new_status):
+        if new_status in DeliveryStatus.__members__:
+            self.delivery_status_stored = new_status
+
     
     # Total price of the order.
     @property
@@ -241,7 +243,6 @@ class Orders(db.Model):
             "customer_last_name": self.customers.last_name,
             'payment_type': self.payment_types.payment_type_name,
             'total_cost': self.total_cost,
-            'payment_received': self.payment_received,
             'notes': self.notes,
             'date_added': self.date_added,
             'date_modified': self.date_modified,
@@ -270,7 +271,10 @@ class Cookie_Inventory(db.Model):
     @property
     def projected_inventory(self):
         # Get all of the orders associated with the user. 
-        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
+        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, 
+                                                                                Order_Cookies.cookie_id==self.cookie_id, 
+                                                                                Orders.order_status_stored!=OrderStatus.FINISHED
+                                                                                ).all()
         resulting_quantity = self.inventory
         for order_cookie in order_cookies:
             resulting_quantity -= order_cookie.quantity

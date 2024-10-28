@@ -28,13 +28,13 @@ Application folder for the backend of the Crumbs application.
 | 13 | Marley | Mittens | 12 |
 
 ### Orders
-| id | customer_id | payment_id | payment_received | notes | date_added | date_modified | order_status_stored | payment_status | delivery_status | 'total_cost' |
+| id | customer_id | payment_id | notes | date_added | date_modified | order_status_stored | payment_status_stored | delivery_status_stored | 'total_cost' |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 32 | 13 | 4 | 17.00 | 10/10/2010 | 10/11/2010 | FINISHED | PAYMENT_INCOMPLETE | NOT_SENT | 42.00 |
 
 - `order_status_stored` will always be one of the following: `UNFINISHED`, `FINISHED`
-- `payment_status` will always be one of the following: `PAYMENT_UNCONFIRMED`, `PAYMENT_COMPLETE`, `PAYMENT_INCOMPLETE`, `PAYMENT_INVALID`
-- `delivery_status` will always be one of the following: `NOT_SENT`, `SENT`, `DELIVERED`, `DELAYED`, `PICKED_UP`
+- `payment_status_stored` will always be one of the following: `PAYMENT_UNCONFIRMED`, `PAYMENT_COMPLETE`, `PAYMENT_INCOMPLETE`, `PAYMENT_INVALID`
+- `delivery_status_stored` will always be one of the following: `NOT_SENT`, `SENT`, `DELIVERED`, `DELAYED`, `PICKED_UP`
 - A total cost property is present, which is automatically calculated from the cookies attached to the order. 
 - Payment status updates automatically depending on if a valid payment type has been selected as well as if the payment received meets the total cost.
 

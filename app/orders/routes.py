@@ -47,7 +47,7 @@ def add_order(customer_id=None):
             payment_id=payment_id,
             notes=request.form.get("notes", "")
         )
-        
+
         db.session.add(order)
         db.session.commit()
         return jsonify(order.to_dict()), 200
@@ -72,17 +72,11 @@ def update_order(order_id, customer_id=None):
     
     # Change entry values if a change has been specified.
     order.payment_id = request.form.get("payment_id", order.payment_id)
+    order.payment_status = request.form.get("payment_status", order.payment_status)
+    order.delivery_status = request.form.get("delivery_status", order.delivery_status)
     order.order_status = request.form.get("order_status", order.order_status)
     order.notes = request.form.get("notes", order.notes)
     
-    order.payment_status_check()
-    # Only add funds when payment type is confirmed.
-    if (order.payment_status != PaymentStatus.PAYMENT_INVALID) and (order.payment_status != PaymentStatus.PAYMENT_UNCONFIRMED):
-        order.payment_received += float(request.form.get("payment_received", 0))
-        # Check after funds are added.
-        order.payment_status_check()
-    order.delivery_status = request.form.get("delivery_status", order.delivery_status)
-
     order.order_updated()
     db.session.commit()
     return jsonify(order.to_dict()), 200
