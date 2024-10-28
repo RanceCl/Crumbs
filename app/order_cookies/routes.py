@@ -31,17 +31,15 @@ def add_order_cookie(order_id, cookie_id):
     if not order:
         return jsonify({"message": "Order " + order_id + " not found."}), 404
     
-    # Make sure desired cookie exists and that enough exists in inventory.
-    cookie_inventory = Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie_id).first()
-    if not cookie_inventory:
-        return jsonify({"message": "You do not have any of cookie " + cookie_id + "."}), 404
-    if cookie_inventory.projected_inventory < desired_quantity:
-        return jsonify({"message": "Your order wants "+ desired_quantity + " of cookie " + cookie_id + ", but you only have " + cookie_inventory.projected_inventory + "."}), 402
+    # Make sure desired cookie exists.
+    cookie = Cookies.query.filter_by(id=cookie_id).first()
+    if not cookie:
+        return jsonify({"message": "Cookie " + cookie_id + " doesn't exist."}), 404
     
     # Make sure this entry doesn't already exist
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if order_cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " already exists."}), 404
+        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " already exists."}), 400
 
     order_cookie = Order_Cookies(order_id=order_id, cookie_id=cookie_id, quantity = desired_quantity)
     db.session.add(order_cookie)
@@ -61,16 +59,9 @@ def patch_order_cookie(order_id, cookie_id):
     if not order_cookie:
         return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     
-    desired_quantity = int(request.form.get("quantity", order_cookie.quantity))
-
-    # Make sure desired cookie exists and that enough exists in inventory.
-    cookie_inventory = Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie_id).first()
-    if not cookie_inventory:
-        return jsonify({"message": "You do not have any of cookie " + cookie_id + "."}), 404
-    # Remember that the projected inventory also includes the current order, so adjust calculation for that. 
-    if (cookie_inventory.projected_inventory + order_cookie.quantity) < desired_quantity:
-        return jsonify({"message": "Your order wants "+ (desired_quantity - order_cookie.quantity) + " more of cookie " + cookie_id + ", but you only have " + cookie_inventory.projected_inventory + "."}), 402
-    
+    # Make new quantity for the order cookies. No change if none is given.
+    order_cookie.quantity = int(request.form.get("quantity", order_cookie.quantity))
+        
     # Check for updates
     order_cookie.orders.payment_status_check()
     order_cookie.orders.order_updated()
