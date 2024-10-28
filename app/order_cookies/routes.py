@@ -45,7 +45,6 @@ def add_order_cookie(order_id, cookie_id):
     db.session.add(order_cookie)
     
     # Check for updates
-    order.payment_status_check()
     order.order_updated()
     db.session.commit()
     return jsonify(order_cookie.to_dict()), 200
@@ -63,7 +62,6 @@ def patch_order_cookie(order_id, cookie_id):
     order_cookie.quantity = int(request.form.get("quantity", order_cookie.quantity))
         
     # Check for updates
-    order_cookie.orders.payment_status_check()
     order_cookie.orders.order_updated()
 
     db.session.commit()
@@ -81,7 +79,6 @@ def delete_order_cookie(order_id, cookie_id):
     if not order_cookie:
         return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     db.session.delete(order_cookie)
-    order.payment_status_check()
     order.order_updated()
     db.session.commit()
     return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " deleted."}), 200
