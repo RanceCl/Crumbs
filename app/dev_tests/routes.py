@@ -114,9 +114,9 @@ def populate_orders(customer_id):
     return None
 
 # Customer initialization
-def add_customer(first_name, user_id):
-    new_customer = Customers(first_name=first_name,
-                            last_name=first_name,
+def add_customer(customer_name, user_id):
+    new_customer = Customers(first_name=customer_name[0],
+                            last_name=customer_name[1],
                             user_id=user_id)
     #current_user.append(new_customer)
     db.session.add(new_customer)
@@ -125,7 +125,14 @@ def add_customer(first_name, user_id):
 
 @dev_tests.route('/populate_customers', methods=['GET','POST'])
 def populate_customers():
-    names = ["Chad","Jim","Known","Jane","Don","Abe","Corey","Linda","Leen","Noni","Chi-Chi","Best","Midnight","Marley","Known","Chad"]
+    names = [
+        ["Chad", "GPT"], ["Jim", "Anderson"], ["Known","Lastname"], 
+        ["Jane", "Doe"], ["Don", "Nots"], ["Abe", "Lincoln"],
+        ["Corey", "House"], ["Linda", "Ahern"], ["Leanne", "Cavanaugh"],
+        ["Noni", "Nonya"], ["Firstname", "Lastname"], ["Best", "Friend"],
+        ["Midnight", "White"], ["Marley", "Ahern"], ["Chi-Chi","DBZ"],
+        ["Chad", "GPT"]
+    ]
     name_index = 0
     user_ids = [id[0] for id in Users.query.with_entities(Users.id).all()]
     for user_id in user_ids:
