@@ -209,7 +209,7 @@ class Orders(db.Model):
         if new_status in PaymentStatus.__members__:
             self.payment_status_stored = new_status
     
-    # The getter and setter for the payment status.
+    # The getter and setter for the delivery status.
     @property
     def delivery_status(self):
         return self.delivery_status_stored
