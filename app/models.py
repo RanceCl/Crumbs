@@ -171,6 +171,7 @@ class Orders(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     payment_id = db.Column(db.Integer, db.ForeignKey('payment_types.id'))
     payment_received = db.Column(db.Float, nullable=False, default=0.00)
+    notes = db.Column(db.String, nullable=False, default='')
     date_added = db.Column(db.Date, default=db.func.current_timestamp())
     date_modified = db.Column(db.Date, default=db.func.current_timestamp())
     order_status_stored = db.Column(db.Enum(OrderStatus), nullable=False, default=OrderStatus.UNFINISHED)
@@ -181,9 +182,10 @@ class Orders(db.Model):
     cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
     payment_types = db.relationship('Payment_Types', back_populates='orders')
 
-    def __init__(self, customer_id, payment_id):
+    def __init__(self, customer_id, payment_id, notes = ""):
         self.customer_id = customer_id
         self.payment_id = payment_id
+        self.notes = notes
     
     def order_updated(self):
         self.date_modified = db.func.current_timestamp()
@@ -240,6 +242,7 @@ class Orders(db.Model):
             'payment_type': self.payment_types.payment_type_name,
             'total_cost': self.total_cost,
             'payment_received': self.payment_received,
+            'notes': self.notes,
             'date_added': self.date_added,
             'date_modified': self.date_modified,
             'order_status': str(self.order_status),

@@ -42,7 +42,12 @@ def add_order(customer_id=None):
         if not customer:
             return jsonify({"message": "Customer " + customer_id + " not found."}), 404
         
-        order = Orders(customer_id=customer_id,payment_id=payment_id)
+        order = Orders(
+            customer_id=customer_id,
+            payment_id=payment_id,
+            notes=request.form.get("notes", "")
+        )
+        
         db.session.add(order)
         db.session.commit()
         return jsonify(order.to_dict()), 200
@@ -64,8 +69,12 @@ def update_order(order_id, customer_id=None):
     order = order_retriever(order_id, customer_id)
     if not order:
         return jsonify({"message": "Order " + order_id + " not found."}), 404
+    
+    # Change entry values if a change has been specified.
     order.payment_id = request.form.get("payment_id", order.payment_id)
     order.order_status = request.form.get("order_status", order.order_status)
+    order.notes = request.form.get("notes", order.notes)
+    
     order.payment_status_check()
     # Only add funds when payment type is confirmed.
     if (order.payment_status != PaymentStatus.PAYMENT_INVALID) and (order.payment_status != PaymentStatus.PAYMENT_UNCONFIRMED):
