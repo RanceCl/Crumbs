@@ -25,9 +25,9 @@ notes
 ```
 ## Update order information
 - Updates order entry.
-- `payment_status` MUST be one of the following if not None: PAYMENT_UNCONFIRMED, PAYMENT_COMPLETE, PAYMENT_INCOMPLETE, PAYMENT_INVALID.
-- `delivery_status` MUST be one of the following if not None: NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP.
-- `order_status` MUST be one of the following if not None: UNFINISHED, FINISHED.
+- `payment_status` MUST be one of the following if not None: "Unconfirmed", "Complete", "Incomplete", "Invalid".
+- `delivery_status` MUST be one of the following if not None: "Not Sent", "Mailed", "Delivered", "Delayed", "Picked Up".
+- `order_status` MUST be one of the following if not None: "Incomplete", "Complete".
 - Returns jsonified dictionary with the updated information of the order.
 ```
 [PATCH] /orders/<order_id>
