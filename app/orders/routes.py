@@ -71,11 +71,22 @@ def update_order(order_id, customer_id=None):
         return jsonify({"message": "Order " + order_id + " not found."}), 404
     
     # Change entry values if a change has been specified.
-    order.payment_id = request.form.get("payment_id", order.payment_id)
-    order.payment_status = request.form.get("payment_status", order.payment_status)
-    order.delivery_status = request.form.get("delivery_status", order.delivery_status)
-    order.order_status = request.form.get("order_status", order.order_status)
-    order.notes = request.form.get("notes", order.notes)
+    # order.payment_id = request.form.get("payment_id", order.payment_id)
+    # order.payment_status = request.form.get("payment_status", order.payment_status)
+    # order.delivery_status = request.form.get("delivery_status", order.delivery_status)
+    # order.order_status = request.form.get("order_status", order.order_status)
+    # order.notes = request.form.get("notes", order.notes)
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+
+    # Change entry values if a change has been specified.
+    order.payment_id = data.get("payment_id", order.payment_id)
+    order.payment_status = data.get("payment_status", order.payment_status)
+    order.delivery_status = data.get("delivery_status", order.delivery_status)
+    order.order_status = data.get("order_status", order.order_status)
+    order.notes = data.get("notes", order.notes)
     
     order.order_updated()
     db.session.commit()
