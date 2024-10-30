@@ -9,12 +9,13 @@ Endpoints that handle the addition of orders as well as handling information abo
 ```
 ## Add order to customer
 Adds order for a customer.
-- Required inputs: customer_id, payment_id
+- Required inputs: customer_id, payment_type_name
+- `payment_type_name` uses one of the following: Cash, Credit, Venmo, PayPal.
 - Returns jsonified dictionary with the information of the new order.
 ```
 [POST] /orders
 customer_id
-payment_id
+payment_type_name
 notes
 ```
 ## Show order information
@@ -25,6 +26,7 @@ notes
 ```
 ## Update order information
 - Updates order entry.
+- `payment_type_name` uses one of the following: Cash, Credit, Venmo, PayPal.
 - `payment_status` MUST be one of the following if not None: "Unconfirmed", "Complete", "Incomplete", "Invalid".
 - `delivery_status` MUST be one of the following if not None: "Not Sent", "Mailed", "Delivered", "Delayed", "Picked Up".
 - `order_status` MUST be one of the following if not None: "Incomplete", "Complete".
@@ -32,7 +34,7 @@ notes
 ```
 [PATCH] /orders/<order_id>
 customer_id
-payment_id
+payment_type_name
 notes
 payment_status
 delivery_status

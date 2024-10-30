@@ -34,9 +34,9 @@ def get_orders_list(customer_id=None):
 @login_required
 def add_order(customer_id=None):
     if (('customer_id' in request.form or customer_id)
-        and 'payment_id' in request.form):
+        and 'payment_type_name' in request.form):
         customer_id = request.form.get("customer_id", customer_id)
-        payment_id = request.form.get("payment_id")
+        payment_type_name = request.form.get("payment_type_name")
         customer = Customers.query.filter_by(id=customer_id).first()
         # Make sure customer exists before making an order for them.
         if not customer:
@@ -44,7 +44,7 @@ def add_order(customer_id=None):
         
         order = Orders(
             customer_id=customer_id,
-            payment_id=payment_id,
+            payment_type=payment_type_name,
             notes=request.form.get("notes", "")
         )
 
@@ -71,18 +71,17 @@ def update_order(order_id, customer_id=None):
         return jsonify({"message": "Order " + order_id + " not found."}), 404
     
     # Change entry values if a change has been specified.
-    # order.payment_id = request.form.get("payment_id", order.payment_id)
+    # order.payment_type_name = request.form.get("payment_type_name", order.payment_type_name)
     # order.payment_status = request.form.get("payment_status", order.payment_status)
     # order.delivery_status = request.form.get("delivery_status", order.delivery_status)
     # order.order_status = request.form.get("order_status", order.order_status)
     # order.notes = request.form.get("notes", order.notes)
-    
     data = request.get_json()
     if not data:
         return jsonify({"message": "Invalid request"}), 400
-
     # Change entry values if a change has been specified.
-    order.payment_id = data.get("payment_id", order.payment_id)
+    if 'payment_type_name' in data:
+        order.payment_type_name(data.get("payment_type_name"))
     order.payment_status = data.get("payment_status", order.payment_status)
     order.delivery_status = data.get("delivery_status", order.delivery_status)
     order.order_status = data.get("order_status", order.order_status)

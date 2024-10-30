@@ -99,9 +99,9 @@ def populate_order_cookies(order_id):
     return None
 
 # Order initialization
-def add_order(customer_id, payment_id):
+def add_order(customer_id, payment_type_name):
     new_order = Orders(customer_id=customer_id,
-                       payment_id=payment_id)
+                       payment_type=payment_type_name)
     db.session.add(new_order)
     db.session.commit()
     return new_order.id
@@ -109,7 +109,7 @@ def add_order(customer_id, payment_id):
 # For each customer, add four orders
 def populate_orders(customer_id):
     for _ in range(4):
-        new_order_id = add_order(customer_id, 0)
+        new_order_id = add_order(customer_id, "Unspecified")
         populate_order_cookies(new_order_id)
     return None
 

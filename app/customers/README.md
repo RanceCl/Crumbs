@@ -9,7 +9,7 @@ Endpoints that handle the addition of customers as well as handling information 
 ```
 ## Create customer for current user
 - Creates a new customer for the logged in user.
-- Required inputs: first_name, last_name
+- Required inputs: `first_name`, `last_name`
 - Returns confirmation message with the full name of the customer.
 ```
 [POST] /customers
@@ -24,7 +24,7 @@ last_name
 ```
 ## Update customer information
 - Updates the information of the customer with the given customer id.
-- Required inputs: first_name, last_name
+- Required inputs: `first_name`, `last_name`
 - Returns jsonified dictionary with new customer information.
 ```
 [PATCH] /customers/<customer_id>
@@ -49,12 +49,13 @@ Endpoints that handle the addition of orders to customers as well as handling in
 ```
 ## Add order to customer
 - Adds an order to the customer with the id in the endpoint.
-- Required inputs: payment_id
+- Required inputs: `payment_type_name`
+- `payment_type_name` uses one of the following: Cash, Credit, Venmo, PayPal.
 - Rerouts to orders endpoint to add an order to a customer, using the current customer's id.
 - Returns jsonified dictionary with the information of the new order.
 ```
 [POST] /customers/<customer_id>/orders
-payment_id
+payment_type_name
 ```
 ## Show customer's order's information
 - Lists the information on the order with the order_id belonging to the customer with the id in the endpoint. 
@@ -67,13 +68,14 @@ payment_id
 ## Update customer's order's information
 - Updates the information on the order with the order_id belonging to the user with the id in the endpoint. 
 - Only works for orders that belong to the customer.
+- `payment_type_name` uses one of the following: Cash, Credit, Venmo, PayPal.
 - `payment_status` MUST be one of the following if not None: PAYMENT_UNCONFIRMED, PAYMENT_COMPLETE, PAYMENT_INCOMPLETE, PAYMENT_INVALID.
 - `delivery_status` MUST be one of the following if not None: NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP.
 - `order_status` MUST be one of the following if not None: UNFINISHED, FINISHED.
 - Returns jsonified dictionary with the updated information of the order.
 ```
 [PATCH] /customers/<customer_id>/orders/<order_id>
-payment_id
+payment_type_name
 notes
 payment_status
 delivery_status

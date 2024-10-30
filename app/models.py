@@ -141,13 +141,25 @@ class Orders(db.Model):
     cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
     payment_types = db.relationship('Payment_Types', back_populates='orders')
 
-    def __init__(self, customer_id, payment_id, notes = ""):
+    def __init__(self, customer_id, payment_type, notes = ""):
         self.customer_id = customer_id
-        self.payment_id = payment_id
+        if payment_type:
+            self.payment_type_name(payment_type)
+        else:
+            self.payment_type_name("Unspecified")
         self.notes = notes
     
     def order_updated(self):
         self.date_modified = db.func.current_timestamp()
+
+    # The getter and setter for the payment_id.
+    def payment_type_name(self, new_payment_name):
+        payment_type = Payment_Types.query.filter_by(payment_type_name=new_payment_name).first()
+        if not payment_type:
+            self.payment_id = 0
+        else:
+            self.payment_id = payment_type.id
+        return
     
     # The getter and setter for the order status.
     @property
