@@ -18,8 +18,6 @@ def get_user_inventory():
     cookie_inventory = Cookie_Inventory.query.join(Cookies).filter(Cookie_Inventory.user_id == current_user.id).all()
     result = {}
     for inventory in cookie_inventory:
-        #result[inventory.cookies.cookie_name] = inventory.projected_inventory
-        
         result[inventory.cookies.cookie_name] = {
             "inventory": inventory.inventory,
             "projected_inventory": inventory.projected_inventory}
@@ -30,45 +28,53 @@ def get_user_inventory():
 @inventory.route('/', methods=['POST', 'PATCH'])
 @login_required
 def set_user_inventory():
-    if ('cookie_name' in request.form
-        and 'inventory' in request.form):
-        cookie_name = request.form.get("cookie_name")
-        inventory=int(request.form.get("inventory"))
+    # Input is a json.
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
+    # You can only add or edit the inventory if the name and the new inventory value are provided.
+    if ('cookie_name' in data
+        and 'inventory' in data):
+        cookie_name = data.get("cookie_name")
+        inventory=int(data.get("inventory"))
         cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
         
         # Ensure that the cookie exists.
         if not cookie:
-            return "I'm sorry, " + cookie_name + " doesn't exist. :("
+            return jsonify({"message": "Cookie " + cookie_name + " not found."}), 404
         
         cookie_inventory = Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie.id).first()
         # If the cookie exists, but no count does, then add it to the table.
         if not cookie_inventory: 
-            cookie_inventory = Cookie_Inventory(
-                user_id=current_user.id, 
-                cookie_id=cookie.id, 
-                inventory=inventory)
+            cookie_inventory = Cookie_Inventory(user_id=current_user.id, cookie_id=cookie.id, inventory=inventory)
             db.session.add(cookie_inventory)
             db.session.commit()
-            return cookie_name + " added to inventory table! You have " + str(inventory) + " in stock! :D"
+            return jsonify(cookie_name + " added to inventory table! You have " + str(inventory) + " in stock! :D"), 200
         cookie_inventory.inventory = inventory
         db.session.commit()
-        return cookie_name + " inventory updated! You have " + str(cookie_inventory.projected_inventory) + " out of " + str(inventory) + " in stock! :D"
-    return "Please fill out the form!"
+        return jsonify(cookie_name + " inventory updated! You have " + str(cookie_inventory.projected_inventory) + " out of " + str(inventory) + " in stock! :D"), 200
+    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
 # Delete inventory
 @inventory.route('/', methods=['DELETE'])
 @login_required
 def delete_user_inventory():
-    if ('cookie_name' in request.form):
-        cookie_name = request.form.get("cookie_name")
+    # Input is a json.
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
+    if ('cookie_name' in data):
+        cookie_name = data.get("cookie_name")
         
         cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
         
         # Ensure that the cookie exists.
         if not cookie:
-            return "I'm sorry, " + cookie_name + " doesn't exist. :("
+            return jsonify({"message": "Cookie " + cookie_name + " not found."}), 404
         
         Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie.id).delete()
         db.session.commit()
-        return cookie_name + " deleted! :D"
-    return "Please fill out the form!"
+        return jsonify({"message": cookie_name + " inventory deleted."}), 200
+    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400

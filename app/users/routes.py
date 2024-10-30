@@ -23,19 +23,24 @@ def read():
 @users.route('/change_email', methods=['GET','PATCH'])
 @login_required
 def change_email():
+    # Input is a json.
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
     if (request.method == 'PATCH' 
-        and 'new_email' in request.form 
-        and 'password' in request.form):
+        and 'new_email' in data 
+        and 'password' in data):
 
         # Retreive and verify password
-        password = request.form.get("password")
+        password = data.get("password")
         if not password: 
             return "Please enter current password to confirm change."
         if not current_user.check_password(password):
             return "Password is incorrect. Please try again."
 
         # Retreive and validate new email
-        new_email = request.form.get("new_email")
+        new_email = data.get("new_email")
         if Users.query.filter_by(email=new_email).first():
             return "Account with this email already exists!"
         
@@ -55,21 +60,26 @@ def change_email():
 @users.route('/change_password', methods=['GET','PATCH'])
 @login_required
 def change_password():
+    # Input is a json.
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
     if (request.method == 'PATCH' 
-        and 'password' in request.form 
-        and 'new_password' in request.form 
-        and 'new_password_confirm' in request.form):
+        and 'password' in data 
+        and 'new_password' in data 
+        and 'new_password_confirm' in data):
 
         # Retreive and verify old password
-        password = request.form.get("password")
+        password = data.get("password")
         if not password: 
             return "Please enter current password to confirm change."
         if not current_user.check_password(password):
             return "Password is incorrect. Please try again."
         
         # Retrieve and validate new password
-        new_password = request.form.get("new_password")
-        new_password_confirm = request.form.get("new_password_confirm")
+        new_password = data.get("new_password")
+        new_password_confirm = data.get("new_password_confirm")
 
         password_flag = current_user.set_password(new_password, new_password_confirm)
         if password_flag: 

@@ -28,10 +28,16 @@ def get_customer_list():
 @customers.route('/', methods=['POST'])
 @login_required
 def add_customer():
-    if ('first_name' in request.form
-        and 'last_name' in request.form):
-        first_name=request.form.get("first_name")
-        last_name=request.form.get("last_name")
+    # Input is a json.
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
+    # Can only add a customer if the proper information is given.
+    if ('first_name' in data
+        and 'last_name' in data):
+        first_name=data.get("first_name")
+        last_name=data.get("last_name")
         new_customer = Customers(first_name=first_name,
                                  last_name=last_name,
                                  user_id=current_user.id)
@@ -54,16 +60,23 @@ def read_customer(customer_id):
 @customers.route('/<customer_id>', methods=['PATCH'])
 @login_required
 def update_customer(customer_id):
-    if ('first_name' in request.form
-        and 'last_name' in request.form):
-        customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
-        if not customer:
-            return jsonify({"message": "Customer " + customer_id + " not found."}), 404
-        customer.first_name = request.form.get("first_name")
-        customer.last_name = request.form.get("last_name")
-        db.session.commit()
-        return jsonify(customer.to_dict()), 200
-    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
+    # Input is a json.
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
+    customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
+    if not customer:
+        return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+    
+    # Change the names if provided
+    if 'first_name' in data: 
+        customer.first_name = data.get("first_name")
+    if 'last_name' in data:
+        customer.last_name = data.get("last_name")
+    
+    db.session.commit()
+    return jsonify(customer.to_dict()), 200
 
 # Delete customers based on id.
 @customers.route('/<customer_id>', methods=['DELETE'])

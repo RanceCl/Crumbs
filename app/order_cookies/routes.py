@@ -24,8 +24,12 @@ def read_order_cookie(order_id, cookie_id):
 @order_cookies.route('/<order_id>/<cookie_id>', methods=['POST'])
 @login_required
 def add_order_cookie(order_id, cookie_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
+    
     # 0 desired if none given.
-    desired_quantity = int(request.form.get("quantity", 0))
+    desired_quantity = data.get("quantity", 0)
     # Make sure order exists.
     order = Orders.query.filter_by(id=order_id).first()
     if not order:
@@ -53,13 +57,16 @@ def add_order_cookie(order_id, cookie_id):
 @order_cookies.route('/<order_id>/<cookie_id>', methods=['PATCH'])
 @login_required
 def patch_order_cookie(order_id, cookie_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Invalid request"}), 400
     # Make sure this entry exists.
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if not order_cookie:
         return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     
     # Make new quantity for the order cookies. No change if none is given.
-    order_cookie.quantity = int(request.form.get("quantity", order_cookie.quantity))
+    order_cookie.quantity = data.get("quantity", order_cookie.quantity)
         
     # Check for updates
     order_cookie.orders.order_updated()
