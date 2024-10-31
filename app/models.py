@@ -276,6 +276,7 @@ class Order_Cookies(db.Model):
         return {
             "order_id": self.order_id,
             "cookie_name": self.cookies.cookie_name,
+            "cookie_id": self.cookies.id,
             "quantity": self.quantity,
             "price": self.price
         }
