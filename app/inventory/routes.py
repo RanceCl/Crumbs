@@ -28,16 +28,11 @@ def get_user_inventory():
 @inventory.route('/', methods=['POST', 'PATCH'])
 @login_required
 def set_user_inventory():
-    # Input is a json.
-    data = request.get_json()
-    if not data:
-        return jsonify({"message": "Invalid request"}), 400
-    
     # You can only add or edit the inventory if the name and the new inventory value are provided.
-    if ('cookie_name' in data
-        and 'inventory' in data):
-        cookie_name = data.get("cookie_name")
-        inventory = data.get("inventory")
+    if ('cookie_name' in request.form
+        and 'inventory' in request.form):
+        cookie_name = request.form.get("cookie_name")
+        inventory = request.form.get("inventory")
         cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
         
         # Ensure that the cookie exists.
@@ -60,13 +55,8 @@ def set_user_inventory():
 @inventory.route('/', methods=['DELETE'])
 @login_required
 def delete_user_inventory():
-    # Input is a json.
-    data = request.get_json()
-    if not data:
-        return jsonify({"message": "Invalid request"}), 400
-    
-    if ('cookie_name' in data):
-        cookie_name = data.get("cookie_name")
+    if ('cookie_name' in request.form):
+        cookie_name = request.form.get("cookie_name")
         
         cookie = Cookies.query.filter_by(cookie_name=cookie_name).first()
         
