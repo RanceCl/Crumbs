@@ -41,12 +41,20 @@ def set_user_inventory():
         
         cookie_inventory = Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie.id).first()
         # If the cookie exists, but no count does, then add it to the table.
+        # if not cookie_inventory: 
+        #     cookie_inventory = Cookie_Inventory(user_id=current_user.id, cookie_id=cookie.id, inventory=inventory)
+        #     db.session.add(cookie_inventory)
+        #     db.session.commit()
+        #     return jsonify({"message": cookie_name + " added to inventory table! You have " + str(inventory) + " in stock! :D"}), 200
+        # cookie_inventory.inventory = inventory
         if not cookie_inventory: 
             cookie_inventory = Cookie_Inventory(user_id=current_user.id, cookie_id=cookie.id, inventory=inventory)
+            cookie_inventory.update_projected_inventory()
             db.session.add(cookie_inventory)
-            db.session.commit()
-            return jsonify({"message": cookie_name + " added to inventory table! You have " + str(inventory) + " in stock! :D"}), 200
-        cookie_inventory.inventory = inventory
+        else:
+            # Update existing inventory and recalculate projected inventory
+            cookie_inventory.inventory = inventory
+            cookie_inventory.update_projected_inventory()
         db.session.commit()
         return jsonify({"message": cookie_name + " inventory updated! You have " + str(cookie_inventory.projected_inventory) + " out of " + str(inventory) + " in stock! :D"}), 200
     return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
