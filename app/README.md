@@ -92,10 +92,10 @@ All of the endpoints within the project are listed below. They are given and exp
 - Delete order: `[DELETE] /orders/<order_id>`
 
 ### [Order Cookies](order_cookies/)
-- List order's cookies: `[GET] /orders/<order_id>/<cookie_id>`
-- Add cookie to order: `[POST] /orders/<order_id>/<cookie_id>`
-- Update order's cookie: `[PATCH] /orders/<order_id>/<cookie_id>`
-- Delete cookie from order: `[DELETE] /orders/<order_id>/<cookie_id>`
+- List order's cookies: `[GET] /order_cookies/<order_id>/<cookie_id>`
+- Add cookie to order: `[POST] /order_cookies/<order_id>/<cookie_id>`
+- Update order's cookie: `[PATCH] /order_cookies/<order_id>/<cookie_id>`
+- Delete cookie from order: `[DELETE] /order_cookies/<order_id>/<cookie_id>`
 
 ### [User Info](users/)
 - List current user's information: `[GET] /users`

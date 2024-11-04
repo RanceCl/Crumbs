@@ -156,21 +156,21 @@ delivery_status [NOT_SENT, SENT, DELIVERED, DELAYED, PICKED_UP]
 ### [Order Cookies](app/order_cookies/)
 #### List order's cookies
 ```
-[GET] /orders/<order_id>/<cookie_id>
+[GET] /order_cookies/<order_id>/<cookie_id>
 ```
 #### Add cookie to order
 ```
-[POST] /orders/<order_id>/<cookie_id>
+[POST] /order_cookies/<order_id>/<cookie_id>
 quantity (set to 0 if none given)
 ```
 #### Update order's cookie
 ```
-[PATCH] /orders/<order_id>/<cookie_id>
+[PATCH] /order_cookies/<order_id>/<cookie_id>
 quantity (no change made if none given.)
 ```
 #### Delete cookie from order
 ```
-[DELETE] /orders/<order_id>/<cookie_id>
+[DELETE] /order_cookies/<order_id>/<cookie_id>
 ```
 
 ### [User Info](app/users/)
