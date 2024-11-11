@@ -84,6 +84,40 @@ class Cookies(db.Model):
             'picture_url': self.picture_url
         }
     
+# Each user's individual cookie count.
+class Cookie_Inventory(db.Model):
+    __tablename__ = 'cookie_inventory'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    cookie_id = db.Column(db.SmallInteger, db.ForeignKey('cookies.id'), primary_key=True)
+    inventory = db.Column(db.Integer, nullable=False, default=0)
+
+    users = db.relationship('Users', back_populates='cookies')
+    cookies = db.relationship('Cookies', back_populates = 'users')
+
+    def __init__(self, user_id, cookie_id, inventory):
+        self.user_id = user_id
+        self.cookie_id = cookie_id
+        self.inventory = inventory
+    
+    # Calculate the projected inventory after the removal of all orders from the current inventory.
+    @property
+    def projected_inventory(self):
+        # Get all of the orders associated with the user. 
+        #order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id, Orders.order_status_stored!="Complete").all()
+        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
+        resulting_quantity = self.inventory
+        for order_cookie in order_cookies:
+            resulting_quantity -= order_cookie.quantity
+        return resulting_quantity
+    
+    def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "cookie_name": self.cookies.cookie_name,
+            "inventory": self.inventory,
+            "projected_inventory": self.projected_inventory
+        }
+    
 class Payment_Types(db.Model):
     __tablename__ = 'payment_types'
     id = db.Column(db.Integer, primary_key=True)
@@ -190,7 +224,6 @@ class Orders(db.Model):
     def delivery_status(self, new_status):
         if new_status in DeliveryStatus:
             self.delivery_status_stored = new_status
-
     
     # Total price of the order.
     @property
@@ -222,40 +255,6 @@ class Orders(db.Model):
             'payment_status': str(self.payment_status),
             'delivery_status': str(self.delivery_status),
             'order_cookies': self.get_order_cookies()
-        }
-
-# Each user's individual cookie count.
-class Cookie_Inventory(db.Model):
-    __tablename__ = 'cookie_inventory'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    cookie_id = db.Column(db.SmallInteger, db.ForeignKey('cookies.id'), primary_key=True)
-    inventory = db.Column(db.Integer, nullable=False, default=0)
-
-    users = db.relationship('Users', back_populates='cookies')
-    cookies = db.relationship('Cookies', back_populates = 'users')
-
-    def __init__(self, user_id, cookie_id, inventory):
-        self.user_id = user_id
-        self.cookie_id = cookie_id
-        self.inventory = inventory
-    
-    # Calculate the projected inventory after the removal of all orders from the current inventory.
-    @property
-    def projected_inventory(self):
-        # Get all of the orders associated with the user. 
-        #order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id, Orders.order_status_stored!="Complete").all()
-        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
-        resulting_quantity = self.inventory
-        for order_cookie in order_cookies:
-            resulting_quantity -= order_cookie.quantity
-        return resulting_quantity
-    
-    def to_dict(self):
-        return {
-            "user_id": self.user_id,
-            "cookie_name": self.cookies.cookie_name,
-            "inventory": self.inventory,
-            "projected_inventory": self.projected_inventory
         }
 
 # Each order's individual cookie count.
