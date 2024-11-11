@@ -165,6 +165,7 @@ class Customers(db.Model):
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    email = db.Column(db.String(120))
 
     users = db.relationship('Users', back_populates='customers')
     orders = db.relationship('Orders', back_populates='customers', cascade="all, delete-orphan")
@@ -181,6 +182,14 @@ class Customers(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name
         }
+    
+    def set_email(self, email):
+        # Make sure that email is in a valid format.
+        email, email_valid = user_validate.is_email_valid(email)
+        if not email_valid: 
+            return email
+        self.email = email
+        return None
 
 OrderStatus = ["Incomplete", "Complete"]
 PaymentStatus = ["Unconfirmed", "Complete", "Incomplete", "Invalid"]

@@ -41,6 +41,10 @@ def add_customer():
         new_customer = Customers(first_name=first_name,
                                  last_name=last_name,
                                  user_id=current_user.id)
+        # Validate and set email if one is present
+        if 'email' in data:
+            new_customer.set_email(data.get("email").strip().lower())
+        
         db.session.add(new_customer)
         db.session.commit()
 
@@ -74,6 +78,8 @@ def update_customer(customer_id):
         customer.first_name = data.get("first_name")
     if 'last_name' in data:
         customer.last_name = data.get("last_name")
+    if 'email' in data:
+            customer.set_email(data.get("email").strip().lower())
     
     db.session.commit()
     return jsonify(customer.to_dict()), 200
