@@ -1,5 +1,6 @@
 import re
 from email_validator import validate_email, EmailNotValidError
+import phonenumbers
 
 # Make sure that the email is in the desired format. Flag if invalid.
 def is_email_valid(email):
@@ -29,3 +30,12 @@ def is_password_valid(password):
         return "Password must have at least one of the following characters [!@#$%^&*_?]."
     else: 
         return None
+
+# Testing the script
+if __name__ == '__main__':
+    print("== Email Tests ==")
+    print(is_email_valid("abercrombe@gmail.com"))
+    print(is_email_valid("@bercrombe@gmail.com"))
+    print(is_email_valid("@gmail.com"))
+    print(is_email_valid(""))
+    print(is_email_valid("abercrombe@gmail.com"))
