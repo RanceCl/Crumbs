@@ -39,10 +39,9 @@ def add_order(customer_id=None):
         return jsonify({"message": "Invalid request"}), 400
     
     # A new order can only be placed if the customer id is provided and a valid payment type is also provided.
-    if (('customer_id' in data or customer_id)
-        and 'payment_type_name' in data):
+    if ('customer_id' in data or customer_id):
         customer_id = data.get("customer_id", customer_id)
-        payment_type_name = data.get("payment_type_name")
+        payment_type_name = data.get("payment_type_name", "Unspecified")
         customer = Customers.query.filter_by(id=customer_id).first()
         # Make sure customer exists before making an order for them.
         if not customer:
