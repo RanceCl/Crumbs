@@ -70,7 +70,7 @@ def login():
             return jsonify({'status': 'success', 'message': 'Welcome back!'}), 200
     return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
-@auth.route('/logout', methods=['POST'])
+@auth.route('/logout', methods=['GET','POST'])
 @login_required
 def logout():
     logout_user()

@@ -52,3 +52,9 @@ def register_blueprints(app):
 
         from .users import users as users_bp
         app.register_blueprint(users_bp, url_prefix='/users')
+
+def register_error_handlers(app):
+    with app.app_context():
+        @app.errorhandler(404)
+        def page_not_found(error):
+            return "Oops! Page not found.", 404
