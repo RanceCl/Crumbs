@@ -96,11 +96,15 @@ def update_order(order_id, customer_id=None):
     order.order_updated()
     db.session.commit()
 
+    '''
     # Automatically sets order status to complete or incomplete for testing.
     if order.payment_status == "Complete" and order.delivery_status == "Picked Up":
         order.order_status = "Complete"
     else:
         order.order_status = "Incomplete"
+    '''
+    order.order_status = data.get("order_status", order.order_status)
+    
     
     return jsonify(order.to_dict()), 200
 
