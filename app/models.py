@@ -114,6 +114,8 @@ class Cookie_Inventory(db.Model):
         return {
             "user_id": self.user_id,
             "cookie_name": self.cookies.cookie_name,
+            'picture_url': self.cookies.picture_url,
+            "description": self.cookies.description,
             "inventory": self.inventory,
             "projected_inventory": self.projected_inventory
         }
