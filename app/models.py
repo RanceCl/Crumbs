@@ -50,13 +50,39 @@ class Users(db.Model, UserMixin):
                 new_cookie_inventory = Cookie_Inventory(user_id=self.id, cookie_id=cookie.id, inventory=0)
                 db.session.add(new_cookie_inventory)
         db.session.commit()
+    
+    # Current balance from finalized orders
+    @property
+    def actual_balance(self):
+        # All COMPLETED orders belonging to the current user.
+        orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored=="Complete").all()
+        balance = 0.00
 
+        # Add the cost from each order.
+        for order in orders:
+            balance += order.total_cost
+        return balance
+    
+    # Projected balance based on all orders.
+    @property
+    def projected_balance(self):
+        # All orders belonging to the current user.
+        orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id).all()
+        balance = 0.00
+
+        # Add the cost from each order.
+        for order in orders:
+            balance += order.total_cost
+        return balance
+    
     def to_dict(self):
         return {
             'id': self.id,
             'email': self.email,
             'first_name': self.first_name,
-            'last_name': self.last_name
+            'last_name': self.last_name,
+            'actual_balance': self.actual_balance,
+            'projected_balance': self.projected_balance
         }
 
 # User loader for flask-login
@@ -103,8 +129,8 @@ class Cookie_Inventory(db.Model):
     @property
     def projected_inventory(self):
         # Get all of the orders associated with the user. 
-        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id, Orders.order_status_stored!="Complete").all()
-        #order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
+        order_cookies = Order_Cookies.query.join(Orders).join(Customers).join(Users).filter(Users.id==self.user_id, Order_Cookies.cookie_id==self.cookie_id, Orders.order_status_stored!="Complete").all()
+        #order_cookies = Order_Cookies.query.join(Orders).join(Customers).join(Users).filter(Users.id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
         resulting_quantity = self.inventory
         for order_cookie in order_cookies:
             resulting_quantity -= order_cookie.quantity
@@ -136,14 +162,14 @@ class Payment_Types(db.Model):
 class Customers(db.Model):
     __tablename__ = 'customers'
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String, nullable=False)
-    last_name = db.Column(db.String, nullable=False)
+    first_name = db.Column(db.String)
+    last_name = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     users = db.relationship('Users', back_populates='customers')
     orders = db.relationship('Orders', back_populates='customers', cascade="all, delete-orphan")
     
-    def __init__(self, first_name, last_name, user_id):
+    def __init__(self, user_id, first_name=None, last_name=None):
         self.first_name = first_name
         self.last_name = last_name
         self.user_id = user_id
