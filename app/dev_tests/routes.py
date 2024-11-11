@@ -1,5 +1,5 @@
 from random import randrange
-from flask import request, jsonify
+from flask import request, jsonify, redirect, url_for
 from flask_cors import CORS
 
 from ..models import Users, Orders, Payment_Types, Customers, Cookies, Cookie_Inventory, Order_Cookies
@@ -150,12 +150,10 @@ def populate_customers():
 
 # Inventory initialization
 def add_inventory_cookie(user_id, cookie_id, inventory):
-    new_inventory_cookie = Cookie_Inventory(user_id=user_id,
-                                     cookie_id=cookie_id,
-                                     inventory=inventory)
-    db.session.add(new_inventory_cookie)
+    cookie_inventory = Cookie_Inventory.query.filter_by(user_id=user_id, cookie_id=cookie_id).first()
+    cookie_inventory.inventory = inventory
     db.session.commit()
-    return new_inventory_cookie.user_id, new_inventory_cookie.cookie_id
+    return cookie_inventory.user_id, cookie_inventory.cookie_id
 
 # For each order, add a random amount of cookies
 def populate_inventory_cookies(user_id):
@@ -174,12 +172,34 @@ def populate_inventory():
 # User initialization
 def add_user(email, password, first_name, last_name):
     password_confirm = password
+    '''
     new_user = Users(email=email, 
                      first_name=first_name, 
                      last_name=last_name)
     if not new_user.set_password(password, password_confirm):
         db.session.add(new_user)
         db.session.commit()
+        '''
+    # Retreive and validate email
+    if Users.query.filter_by(email=email).first():
+        return "Account with this email already exists!"
+    
+    new_user = Users(first_name=first_name.strip().capitalize(), last_name=last_name.strip().capitalize())
+
+    # Validate and set email
+    email_flag = new_user.set_email(email)
+    if email_flag: 
+        return email_flag
+    
+    # Retrieve and validate password
+    password_flag = new_user.set_password(password=password, password_confirm=password_confirm)
+    if password_flag: 
+        return password_flag
+    
+    db.session.add(new_user)
+    db.session.commit()
+
+    new_user.update_cookie_inventory()
     return None
 
 # @dev_tests.route('/populate_users', methods=['GET','POST'])

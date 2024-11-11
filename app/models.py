@@ -43,10 +43,10 @@ class Users(db.Model, UserMixin):
     # Update inventory
     def update_cookie_inventory(self):
         all_cookies = Cookies.query.all()
-        existing_cookie_inventorys = {uc.cookie_id: uc for uc in self.cookies}
+        existing_cookie_inventories = {uc.cookie_id: uc for uc in self.cookies}
         
         for cookie in all_cookies:
-            if cookie.id not in existing_cookie_inventorys:
+            if cookie.id not in existing_cookie_inventories:
                 new_cookie_inventory = Cookie_Inventory(user_id=self.id, cookie_id=cookie.id, inventory=0)
                 db.session.add(new_cookie_inventory)
         db.session.commit()
@@ -175,7 +175,7 @@ class Orders(db.Model):
     cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
     payment_types = db.relationship('Payment_Types', back_populates='orders')
 
-    def __init__(self, customer_id, payment_type, notes = ""):
+    def __init__(self, customer_id, payment_type=None, notes = ""):
         self.customer_id = customer_id
         if payment_type:
             self.payment_type_name(payment_type)

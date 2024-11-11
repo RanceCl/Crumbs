@@ -27,7 +27,6 @@ def register():
             return "Account with this email already exists!"
         
         new_user = Users(first_name=request.form.get("first_name").strip().capitalize(), last_name=request.form.get("last_name").strip().capitalize())
-        
 
         # Validate and set email
         email_flag = new_user.set_email(email)
@@ -43,6 +42,9 @@ def register():
         
         db.session.add(new_user)
         db.session.commit()
+
+        # Initialize all cookie inventories to 0.
+        new_user.update_cookie_inventory()
         return "New user added"
         # return redirect(url_for('login'))
     elif request.method == 'POST':
@@ -66,11 +68,11 @@ def login():
         else:
             login_user(user)
             # Update their cookies.
-            # user.update_cookie_inventory()
+            user.update_cookie_inventory()
             return jsonify({'status': 'success', 'message': 'Welcome back!'}), 200
     return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
 
-@auth.route('/logout', methods=['GET','POST'])
+@auth.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
