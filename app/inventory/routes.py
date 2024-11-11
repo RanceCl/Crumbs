@@ -21,8 +21,8 @@ def get_user_inventory():
         result[inventory.cookies.cookie_name] = {
             "inventory": inventory.inventory,
             "projected_inventory": inventory.projected_inventory,
-            "description": inventory.description,
-            "picture_url": inventory.picture_url}
+            "description": inventory.cookies.description,
+            "picture_url": inventory.cookies.picture_url}
         
     return result
 
