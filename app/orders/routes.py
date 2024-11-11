@@ -92,11 +92,17 @@ def update_order(order_id, customer_id=None):
         order.payment_type_name(data.get("payment_type_name"))
     order.payment_status = data.get("payment_status", order.payment_status)
     order.delivery_status = data.get("delivery_status", order.delivery_status)
-    order.order_status = data.get("order_status", order.order_status)
     order.notes = data.get("notes", order.notes)
     
     order.order_updated()
     db.session.commit()
+
+    # Automatically sets order status to complete or incomplete for testing.
+    if order.payment_status == "Complete" and order.delivery_status == "Picked Up":
+        order.order_status = "Complete"
+    else:
+        order.order_status = "Incomplete"
+    
     return jsonify(order.to_dict()), 200
 
 # Delete orders based on id.

@@ -103,8 +103,8 @@ class Cookie_Inventory(db.Model):
     @property
     def projected_inventory(self):
         # Get all of the orders associated with the user. 
-        #order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id, Orders.order_status_stored!="Complete").all()
-        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
+        order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id, Orders.order_status_stored!="Complete").all()
+        #order_cookies = Order_Cookies.query.join(Orders).join(Customers).filter(Customers.user_id==self.user_id, Order_Cookies.cookie_id==self.cookie_id).all()
         resulting_quantity = self.inventory
         for order_cookie in order_cookies:
             resulting_quantity -= order_cookie.quantity
@@ -195,6 +195,26 @@ class Orders(db.Model):
             self.payment_id = payment_type.id
         return
     
+    # When an order is complete, it must alter the actual inventory.
+    def complete_order(self):
+        user_id = self.customers.users.id
+        order_cookies = self.cookies
+        for order_cookie in order_cookies:
+            cookie_inventory = Cookie_Inventory.query.filter_by(user_id=user_id, cookie_id=order_cookie.cookie_id).first()
+
+            # Make sure that the inventory doesn't get set to a negative value.
+            if cookie_inventory:
+                if cookie_inventory.inventory >= order_cookie.quantity:
+                    cookie_inventory.inventory -= order_cookie.quantity
+                # Rollback changes and stop adjusting if adjusting would result in a negative inventory stored.
+                else:
+                    db.session.rollback()
+                    return None
+                
+        # Only set to complete and commit changes if they won't cause an invalid actual inventory.
+        self.order_status_stored = "Complete"
+        db.session.commit()
+
     # The getter and setter for the order status.
     @property
     def order_status(self):
@@ -202,8 +222,11 @@ class Orders(db.Model):
 
     @order_status.setter
     def order_status(self, new_status):
-        if new_status in OrderStatus:
-            self.order_status_stored = new_status
+        # The payment status must be set to complete and the delivery status must be picked up before the order status can be set to complete.
+        if new_status == "Complete" and self.payment_status == "Complete" and self.delivery_status == "Picked Up":
+            self.complete_order()
+        else:
+            self.order_status_stored = "Incomplete"
 
     # The getter and setter for the payment status.
     @property
