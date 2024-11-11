@@ -175,14 +175,6 @@ class Customers(db.Model):
         self.last_name = last_name
         self.user_id = user_id
     
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'first_name': self.first_name,
-            'last_name': self.last_name
-        }
-    
     def set_email(self, email):
         # Make sure that email is in a valid format.
         email, email_valid = user_validate.is_email_valid(email)
@@ -190,6 +182,15 @@ class Customers(db.Model):
             return email
         self.email = email
         return None
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email
+        }
 
 OrderStatus = ["Incomplete", "Complete"]
 PaymentStatus = ["Unconfirmed", "Complete", "Incomplete", "Invalid"]
