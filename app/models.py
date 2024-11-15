@@ -33,7 +33,7 @@ class Users(db.Model, UserMixin):
         # Make sure that the password is in a valid format.
         password_flag = user_validate.is_password_valid(password)
         if password_flag: 
-            return jsonify({"message": password_flag}), 400
+            return password_flag
         
         # If input password has passed all tests, set the password.
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")

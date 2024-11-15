@@ -49,7 +49,7 @@ def register():
         # return redirect(url_for('login'))
     elif request.method == 'POST':
         return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
-    return "What you getting at?"
+    return jsonify({"status": "error", "message": "GET is not valid for this route."}), 400
 
 @auth.route('/login', methods=['POST'])
 def login():

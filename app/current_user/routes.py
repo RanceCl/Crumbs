@@ -19,6 +19,20 @@ def get_current_user():
         return jsonify(current_user.to_dict()), 200
     return jsonify({"error": "User not authenticated"}), 401
 
+@cur_user.route('/', methods=['PATCH'])
+@login_required
+def patch_current_user():
+    if 'first_name' in request.form:
+        first_name = request.form.get("first_name")
+        current_user.first_name = first_name
+    if 'last_name' in request.form:
+        last_name = request.form.get("last_name")
+        current_user.last_name = last_name
+    if 'balance' in request.form:
+        balance = float(request.form.get("balance"))
+        current_user.balance = balance
+    db.session.commit()
+    return jsonify(current_user.to_dict()), 200
 
 # Update account email.
 @cur_user.route('/change_email', methods=['PUT', 'PATCH'])

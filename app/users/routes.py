@@ -49,10 +49,10 @@ def change_email():
         # Change email
         current_user.email = new_email
         db.session.commit()
-        return "Email changed!"
+        return jsonify({"message": "Email changed to: " + new_email}), 200
     elif request.method == 'PATCH':
         return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
-    return "What you getting at?"
+    return jsonify({"status": "error", "message": "GET is not valid for this route."}), 400
 
 # Update account password.
 @users.route('/change_password', methods=['GET','PATCH'])
@@ -84,7 +84,7 @@ def change_password():
             return jsonify({"message": password_flag}), 400
         
         db.session.commit()
-        return "Password changed!"
+        return jsonify({"message": "Password successfully changed."}), 200
     elif request.method == 'PATCH':
         return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
-    return "What you getting at?"
+    return jsonify({"status": "error", "message": "GET is not valid for this route."}), 400
