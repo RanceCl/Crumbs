@@ -76,17 +76,11 @@ def update_order(order_id, customer_id=None):
     if not order:
         return jsonify({"message": "Order " + order_id + " not found."}), 404
     
-    # Change entry values if a change has been specified.
-    # order.payment_type_name = request.form.get("payment_type_name", order.payment_type_name)
-    # order.payment_status = request.form.get("payment_status", order.payment_status)
-    # order.delivery_status = request.form.get("delivery_status", order.delivery_status)
-    # order.order_status = request.form.get("order_status", order.order_status)
-    # order.notes = request.form.get("notes", order.notes)
-
     # Input is a json.
     data = request.get_json()
     if not data:
         return jsonify({"message": "Invalid request"}), 400
+    
     # Change entry values if a change has been specified.
     if 'payment_type_name' in data:
         order.payment_type_name(data.get("payment_type_name"))
@@ -95,10 +89,7 @@ def update_order(order_id, customer_id=None):
     order.notes = data.get("notes", order.notes)
     order.order_updated()
     order.order_status = data.get("order_status", order.order_status)
-    
     db.session.commit()
-
-    
     
     return jsonify(order.to_dict()), 200
 
