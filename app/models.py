@@ -10,6 +10,8 @@ class Users(db.Model, UserMixin):
     password_hash = db.Column(db.String, nullable=False)
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
+    balance = db.Column(db.Float, nullable=False, default=0)
+    
 
     cookies = db.relationship("Cookie_Inventory", back_populates = "users", cascade="all, delete-orphan")
     customers = db.relationship("Customers", back_populates = "users", cascade="all, delete-orphan")
@@ -31,7 +33,7 @@ class Users(db.Model, UserMixin):
         # Make sure that the password is in a valid format.
         password_flag = user_validate.is_password_valid(password)
         if password_flag: 
-            return password_flag
+            return jsonify({"message": password_flag}), 400
         
         # If input password has passed all tests, set the password.
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
@@ -67,9 +69,9 @@ class Users(db.Model, UserMixin):
     # Projected balance based on all orders.
     @property
     def projected_balance(self):
-        # All orders belonging to the current user.
-        orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id).all()
-        balance = 0.00
+        # All orders belonging to the current user that aren't complete (and therefore aren't applied to the final total.)
+        orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored!="Complete").all()
+        balance = self.balance
 
         # Add the cost from each order.
         for order in orders:
@@ -82,7 +84,7 @@ class Users(db.Model, UserMixin):
             "email": self.email,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "actual_balance": self.actual_balance,
+            "balance": self.balance,
             "projected_balance": self.projected_balance
         }
 
@@ -271,7 +273,10 @@ class Orders(db.Model):
                 else:
                     db.session.rollback()
                     return None
-                
+        
+        # Add cost of order to the current user's balance if the order can be completed.
+        self.users.balance += self.total_cost
+
         # Only set to complete and commit changes if they won't cause an invalid actual inventory.
         self.order_status_stored = "Complete"
         db.session.commit()
@@ -286,7 +291,7 @@ class Orders(db.Model):
         # The payment status must be set to complete and the delivery status must not indicate an issue before the order status can be set to complete.
         if (new_status == "Complete" 
             and self.payment_status == "Complete" 
-            and self.delivery_status != "Not Sent" and self.delivery_status != "Delivered"):
+            and self.delivery_status != "Not Sent" and self.delivery_status != "Delayed"):
             self.complete_order()
         else:
             self.order_status_stored = "Incomplete"

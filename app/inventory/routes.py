@@ -59,7 +59,7 @@ def set_user_inventory():
         #     cookie_inventory.update_projected_inventory()
         db.session.commit()
         return jsonify({"message": cookie_name + " inventory updated! You have " + str(cookie_inventory.projected_inventory) + " out of " + str(inventory) + " in stock! :D"}), 200
-    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
+    return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
 
 # Delete inventory
 @inventory.route('/', methods=['DELETE'])
@@ -77,4 +77,4 @@ def delete_user_inventory():
         Cookie_Inventory.query.filter_by(user_id=current_user.id, cookie_id=cookie.id).delete()
         db.session.commit()
         return jsonify({"message": cookie_name + " inventory deleted."}), 200
-    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
+    return jsonify({"status": "error", "message": "Please fill out the form!"}), 400

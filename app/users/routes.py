@@ -15,9 +15,7 @@ from . import users
 @users.route('/', methods=['GET'])
 @login_required
 def read():
-    #current_user.email
-    return current_user.to_dict()
-    #return db_methods.user_read_by_id(id)
+    return jsonify(current_user.to_dict()), 200
 
 # Update account email.
 @users.route('/change_email', methods=['GET','PATCH'])
@@ -35,25 +33,25 @@ def change_email():
         # Retreive and verify password
         password = data.get("password")
         if not password: 
-            return "Please enter current password to confirm change."
+            return jsonify({"message": "Please enter current password to confirm change."}), 400
         if not current_user.check_password(password):
-            return "Password is incorrect. Please try again."
+            return jsonify({"message": "Password is incorrect. Please try again."}), 401
 
         # Retreive and validate new email
         new_email = data.get("new_email")
         if Users.query.filter_by(email=new_email).first():
-            return "Account with this email already exists!"
+            return jsonify({"message": "Account with the email address of " + new_email + " already exists."}), 400
         
         email_flag = current_user.set_email(new_email)
         if email_flag: 
-            return email_flag
+            return jsonify({"message": email_flag}), 400
         
         # Change email
         current_user.email = new_email
         db.session.commit()
         return "Email changed!"
     elif request.method == 'PATCH':
-        return "Please fill out the form!"
+        return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
     return "What you getting at?"
 
 # Update account password.
@@ -73,9 +71,9 @@ def change_password():
         # Retreive and verify old password
         password = data.get("password")
         if not password: 
-            return "Please enter current password to confirm change."
+            return jsonify({"message": "Please enter current password to confirm change."}), 400
         if not current_user.check_password(password):
-            return "Password is incorrect. Please try again."
+            return jsonify({"message": "Password is incorrect. Please try again."}), 401
         
         # Retrieve and validate new password
         new_password = data.get("new_password")
@@ -83,10 +81,10 @@ def change_password():
 
         password_flag = current_user.set_password(new_password, new_password_confirm)
         if password_flag: 
-            return password_flag
+            return jsonify({"message": password_flag}), 400
         
         db.session.commit()
         return "Password changed!"
     elif request.method == 'PATCH':
-        return "Please fill out the form!"
+        return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
     return "What you getting at?"

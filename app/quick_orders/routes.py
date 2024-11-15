@@ -31,7 +31,7 @@ def add_quick_order(customer_id=None):
     
     # A valid payment type and cookie list must be given.
     if not ('payment_type_name' in data and 'cookies' in data):
-        return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
+        return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
     
     payment_type_name = data.get("payment_type_name")
     payment_type = Payment_Types.query.filter_by(payment_type_name=payment_type_name).first()
@@ -40,7 +40,7 @@ def add_quick_order(customer_id=None):
     
     cookies = data.get("cookies")
     if not cookies:
-        return jsonify({'status': 'error', 'message': 'No cookies given!'}), 400
+        return jsonify({"status": "error", "message": "No cookies given!"}), 400
     
     # Create a completed order.
     order = Orders(

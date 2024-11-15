@@ -49,7 +49,7 @@ def add_customer():
         db.session.commit()
 
         return jsonify({"message": first_name + " " + last_name + " added as a customer!"}), 200
-    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
+    return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
 
 # Show customers based on id.
 @customers.route('/<customer_id>', methods=['GET'])

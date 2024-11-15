@@ -57,7 +57,7 @@ def add_order(customer_id=None):
         db.session.add(order)
         db.session.commit()
         return jsonify(order.to_dict()), 200
-    return jsonify({'status': 'error', 'message': 'Please fill out the form!'}), 400
+    return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
 
 # Show orders based on id.
 @orders.route('/<order_id>', methods=['GET'])
