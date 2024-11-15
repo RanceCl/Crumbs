@@ -17,7 +17,7 @@ from . import order_cookies
 def read_order_cookie(order_id, cookie_id):
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if not order_cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     return jsonify(order_cookie.to_dict()), 200
 
 # Add cookie to order
@@ -26,24 +26,24 @@ def read_order_cookie(order_id, cookie_id):
 def add_order_cookie(order_id, cookie_id):
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     
     # 0 desired if none given.
     desired_quantity = data.get("quantity", 0)
     # Make sure order exists.
     order = Orders.query.filter_by(id=order_id).first()
     if not order:
-        return jsonify({"message": "Order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Order " + order_id + " not found."}), 404
     
     # Make sure desired cookie exists.
     cookie = Cookies.query.filter_by(id=cookie_id).first()
     if not cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " doesn't exist."}), 404
+        return jsonify({"status": "error", "message": "Cookie " + cookie_id + " doesn't exist."}), 404
     
     # Make sure this entry doesn't already exist
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if order_cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " already exists."}), 400
+        return jsonify({"status": "error", "message": "Cookie " + cookie_id + " for order " + order_id + " already exists."}), 400
 
     order_cookie = Order_Cookies(order_id=order_id, cookie_id=cookie_id, quantity = desired_quantity)
     db.session.add(order_cookie)
@@ -59,11 +59,11 @@ def add_order_cookie(order_id, cookie_id):
 def patch_order_cookie(order_id, cookie_id):
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     # Make sure this entry exists.
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if not order_cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     
     # Make new quantity for the order cookies. No change if none is given.
     order_cookie.quantity = data.get("quantity", order_cookie.quantity)
@@ -80,12 +80,12 @@ def patch_order_cookie(order_id, cookie_id):
 def delete_order_cookie(order_id, cookie_id):
     order = Orders.query.filter_by(id=order_id).first()
     if not order:
-        return jsonify({"message": "Order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Order " + order_id + " not found."}), 404
     
     order_cookie = Order_Cookies.query.filter_by(order_id=order_id, cookie_id=cookie_id).first()
     if not order_cookie:
-        return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Cookie " + cookie_id + " for order " + order_id + " not found."}), 404
     db.session.delete(order_cookie)
     order.order_updated()
     db.session.commit()
-    return jsonify({"message": "Cookie " + cookie_id + " for order " + order_id + " deleted."}), 200
+    return jsonify({"status": "success", "message": "Cookie " + cookie_id + " for order " + order_id + " deleted."}), 200

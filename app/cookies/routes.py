@@ -27,7 +27,7 @@ def get_all_cookies():
         }
         for cookie in cookies
     ]
-    return {'cookies': cookies_list}, 200
+    return {"status": "success", 'cookies': cookies_list}, 200
 
 # Show single cookie information
 @cookies.route('/<cookie_name>', methods=['GET'])

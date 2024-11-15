@@ -27,7 +27,7 @@ def get_orders_list(customer_id=None):
     result = []
     for order in orders:
         result.append(order.to_dict())
-    return {"orders": result}, 200
+    return {"status": "success", "orders": result}, 200
 
 # Add order from order page
 @orders.route('/', methods=['POST'])
@@ -36,7 +36,7 @@ def add_order(customer_id=None):
     # Input is a json.
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     
     # A new order can only be placed if the customer id is provided and a valid payment type is also provided.
     if ('customer_id' in data or customer_id):
@@ -45,7 +45,7 @@ def add_order(customer_id=None):
         customer = Customers.query.filter_by(id=customer_id).first()
         # Make sure customer exists before making an order for them.
         if not customer:
-            return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+            return jsonify({"status": "error", "message": "Customer " + customer_id + " not found."}), 404
         
         order = Orders(
             user_id=current_user.id, 
@@ -65,7 +65,7 @@ def add_order(customer_id=None):
 def read_order(order_id, customer_id=None):
     order = order_retriever(order_id, customer_id)
     if not order:
-        return jsonify({"message": "Order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Order " + order_id + " not found."}), 404
     return jsonify(order.to_dict()), 200
 
 # Update orders based on id.
@@ -74,12 +74,12 @@ def read_order(order_id, customer_id=None):
 def update_order(order_id, customer_id=None):
     order = order_retriever(order_id, customer_id)
     if not order:
-        return jsonify({"message": "Order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Order " + order_id + " not found."}), 404
     
     # Input is a json.
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     
     # Change entry values if a change has been specified.
     if 'payment_type_name' in data:
@@ -103,7 +103,7 @@ def delete_order(order_id, customer_id=None):
     else:
         order = Orders.query.filter_by(id=order_id).first()
     if not order:
-        return jsonify({"message": "Order " + order_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Order " + order_id + " not found."}), 404
     db.session.delete(order)
     db.session.commit()
-    return jsonify({"message": "Order " + order_id + " deleted."}), 200
+    return jsonify({"status": "success", "message": "Order " + order_id + " deleted."}), 200

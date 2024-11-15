@@ -27,7 +27,7 @@ def add_quick_order(customer_id=None):
     # Input is a json.
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     
     # A valid payment type and cookie list must be given.
     if not ('payment_type_name' in data and 'cookies' in data):
@@ -36,7 +36,7 @@ def add_quick_order(customer_id=None):
     payment_type_name = data.get("payment_type_name")
     payment_type = Payment_Types.query.filter_by(payment_type_name=payment_type_name).first()
     if not payment_type:
-        return jsonify({"message": "Payment type " + payment_type_name + " not found."}), 404
+        return jsonify({"status": "error", "message": "Payment type " + payment_type_name + " not found."}), 404
     
     cookies = data.get("cookies")
     if not cookies:
@@ -61,7 +61,7 @@ def add_quick_order(customer_id=None):
             # If order can't be completed, delete it from database. 
             db.session.delete(order)
             db.session.commit()
-            return jsonify({"message": "Cookie " + cookie["id"] + " doesn't exist."}), 404
+            return jsonify({"status": "error", "message": "Cookie " + cookie["id"] + " doesn't exist."}), 404
     
     db.session.commit()
     order.order_status = "Complete"

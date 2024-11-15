@@ -22,7 +22,7 @@ def get_customer_list():
     result = []
     for customer in customers:
         result.append(customer.to_dict())
-    return {"customers": result}, 200
+    return {"status": "success", "customers": result}, 200
 
 # Create customer
 @customers.route('/', methods=['POST'])
@@ -31,7 +31,7 @@ def add_customer():
     # Input is a json.
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     
     # Can only add a customer if the proper information is given.
     if ('first_name' in data
@@ -48,7 +48,7 @@ def add_customer():
         db.session.add(new_customer)
         db.session.commit()
 
-        return jsonify({"message": first_name + " " + last_name + " added as a customer!"}), 200
+        return jsonify({"status": "success", "message": first_name + " " + last_name + " added as a customer!"}), 200
     return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
 
 # Show customers based on id.
@@ -57,7 +57,7 @@ def add_customer():
 def read_customer(customer_id):
     customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
     if not customer:
-        return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Customer " + customer_id + " not found."}), 404
     return jsonify(customer.to_dict()), 200
 
 # Update customers based on id.
@@ -67,11 +67,11 @@ def update_customer(customer_id):
     # Input is a json.
     data = request.get_json()
     if not data:
-        return jsonify({"message": "Invalid request"}), 400
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
     
     customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
     if not customer:
-        return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Customer " + customer_id + " not found."}), 404
     
     # Change the names if provided
     if 'first_name' in data: 
@@ -90,10 +90,10 @@ def update_customer(customer_id):
 def delete_customer(customer_id):
     customer = Customers.query.filter_by(id=customer_id, user_id=current_user.id).first()
     if not customer: 
-        return jsonify({"message": "Customer " + customer_id + " not found."}), 404
+        return jsonify({"status": "error", "message": "Customer " + customer_id + " not found."}), 404
     db.session.delete(customer)
     db.session.commit()
-    return jsonify({"message": "Customer " + customer_id + " deleted."}), 200
+    return jsonify({"status": "success", "message": "Customer " + customer_id + " deleted."}), 200
 
 
 # Show customer orders based on id.

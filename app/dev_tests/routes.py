@@ -182,19 +182,19 @@ def add_user(email, password, first_name, last_name):
         '''
     # Retreive and validate email
     if Users.query.filter_by(email=email).first():
-        return jsonify({"message": "Account with the email address of " + email + " already exists."}), 400
+        return jsonify({"status": "error", "message": "Account with the email address of " + email + " already exists."}), 400
     
     new_user = Users(first_name=first_name.strip().capitalize(), last_name=last_name.strip().capitalize())
 
     # Validate and set email
     email_flag = new_user.set_email(email)
     if email_flag: 
-        return jsonify({"message": email_flag}), 400
+        return jsonify({"status": "error", "message": email_flag}), 400
     
     # Retrieve and validate password
     password_flag = new_user.set_password(password=password, password_confirm=password_confirm)
     if password_flag: 
-        return jsonify({"message": password_flag}), 400
+        return jsonify({"status": "error", "message": password_flag}), 400
     
     db.session.add(new_user)
     db.session.commit()

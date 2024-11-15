@@ -24,28 +24,28 @@ def register():
         email = request.form.get("email").strip().lower()
         
         if Users.query.filter_by(email=email).first():
-            return jsonify({"message": "Account with the email address of " + email + " already exists."}), 400
+            return jsonify({"status": "error", "message": "Account with the email address of " + email + " already exists."}), 400
         
         new_user = Users(first_name=request.form.get("first_name").strip().capitalize(), last_name=request.form.get("last_name").strip().capitalize())
 
         # Validate and set email
         email_flag = new_user.set_email(email)
         if email_flag: 
-            return jsonify({"message": email_flag}), 400
+            return jsonify({"status": "error", "message": email_flag}), 400
         
         # Retrieve and validate password
         password_flag = new_user.set_password(
             request.form.get("password"), 
             request.form.get("password_confirm"))
         if password_flag: 
-            return jsonify({"message": password_flag}), 400
+            return jsonify({"status": "error", "message": password_flag}), 400
         
         db.session.add(new_user)
         db.session.commit()
 
         # Initialize all cookie inventories to 0.
         new_user.update_cookie_inventory()
-        return jsonify({"message": "New user added,"}), 200
+        return jsonify({"status": "success", "message": "New user added,"}), 200
         # return redirect(url_for('login'))
     elif request.method == 'POST':
         return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
@@ -86,14 +86,14 @@ def delete_user():
         # Retreive and verify password
         password = request.form.get("password")
         if not password: 
-            return jsonify({"message": "Please enter current password to confirm change."}), 400
+            return jsonify({"status": "error", "message": "Please enter current password to confirm change."}), 400
         if not current_user.check_password(password):
-            return jsonify({"message": "Password is incorrect. Please try again."}), 401
+            return jsonify({"status": "error", "message": "Password is incorrect. Please try again."}), 401
         user = Users.query.get(current_user.id)
         if user:
             db.session.delete(user)
             db.session.commit()
             logout_user
-            return jsonify({"message": "Account deleted."}), 200
+            return jsonify({"status": "success", "message": "Account deleted."}), 200
         return jsonify({"status": "error", "message": "An account with this id has not been found."}), 400
     return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
