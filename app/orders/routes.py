@@ -13,7 +13,7 @@ from . import orders
 def order_retriever(order_id, customer_id):
     if customer_id:
         return Orders.query.join(Customers).filter(Customers.id==customer_id, Orders.id==order_id).first()
-    return Orders.query.join(Customers).filter(Orders.id==order_id).first()
+    return Orders.query.filter(Orders.id==order_id).first()
 
 # Retrieve orders 
 @orders.route('/', methods=['GET'])
@@ -23,7 +23,7 @@ def get_orders_list(customer_id=None):
     if customer_id:
         orders = Orders.query.join(Customers).filter_by(id=customer_id, user_id=current_user.id).all()
     else:
-        orders = Orders.query.join(Customers).filter_by(user_id=current_user.id).all()
+        orders = Orders.query.filter_by(user_id=current_user.id).all()
     result = []
     for order in orders:
         result.append(order.to_dict())
@@ -48,6 +48,7 @@ def add_order(customer_id=None):
             return jsonify({"message": "Customer " + customer_id + " not found."}), 404
         
         order = Orders(
+            user_id=current_user.id, 
             customer_id=customer_id,
             payment_type=payment_type_name,
             notes=data.get("notes", "")

@@ -4,15 +4,16 @@ from flask_login import UserMixin
 from . import user_validate
 
 class Users(db.Model, UserMixin):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String, nullable=False)
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
 
-    cookies = db.relationship('Cookie_Inventory', back_populates = 'users', cascade="all, delete-orphan")
-    customers = db.relationship('Customers', back_populates = 'users', cascade="all, delete-orphan")
+    cookies = db.relationship("Cookie_Inventory", back_populates = "users", cascade="all, delete-orphan")
+    customers = db.relationship("Customers", back_populates = "users", cascade="all, delete-orphan")
+    orders = db.relationship("Orders", back_populates="users", cascade="all, delete-orphan")
 
     def set_email(self, email):
         # Make sure that email is in a valid format.
@@ -33,7 +34,7 @@ class Users(db.Model, UserMixin):
             return password_flag
         
         # If input password has passed all tests, set the password.
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
         return None
     
     # Make sure password matches
@@ -77,12 +78,12 @@ class Users(db.Model, UserMixin):
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'actual_balance': self.actual_balance,
-            'projected_balance': self.projected_balance
+            "id": self.id,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "actual_balance": self.actual_balance,
+            "projected_balance": self.projected_balance
         }
 
 # User loader for flask-login
@@ -91,34 +92,34 @@ def loader_user(user_id):
     return Users.query.get(user_id)
 
 class Cookies(db.Model):
-    __tablename__ = 'cookies'
+    __tablename__ = "cookies"
     id = db.Column(db.SmallInteger, primary_key=True)
     cookie_name = db.Column(db.String(50), unique=True, nullable=False)
-    description = db.Column(db.String, nullable=False, default='')
+    description = db.Column(db.String, nullable=False, default="")
     price = db.Column(db.Float, nullable=False, default=0)
-    picture_url = db.Column(db.String, nullable=False, default='')
+    picture_url = db.Column(db.String, nullable=False, default="")
 
-    users = db.relationship('Cookie_Inventory', back_populates = 'cookies', cascade="all, delete-orphan")
-    orders = db.relationship('Order_Cookies', back_populates = 'cookies', cascade="all, delete-orphan")
+    users = db.relationship("Cookie_Inventory", back_populates = "cookies", cascade="all, delete-orphan")
+    orders = db.relationship("Order_Cookies", back_populates = "cookies", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'cookie_name': self.cookie_name,
-            'description': self.description,
-            'price': self.price,
-            'picture_url': self.picture_url
+            "id": self.id,
+            "cookie_name": self.cookie_name,
+            "description": self.description,
+            "price": self.price,
+            "picture_url": self.picture_url
         }
     
-# Each user's individual cookie count.
+# Each user"s individual cookie count.
 class Cookie_Inventory(db.Model):
-    __tablename__ = 'cookie_inventory'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    cookie_id = db.Column(db.SmallInteger, db.ForeignKey('cookies.id'), primary_key=True)
+    __tablename__ = "cookie_inventory"
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    cookie_id = db.Column(db.SmallInteger, db.ForeignKey("cookies.id"), primary_key=True)
     inventory = db.Column(db.Integer, nullable=False, default=0)
 
-    users = db.relationship('Users', back_populates='cookies')
-    cookies = db.relationship('Cookies', back_populates = 'users')
+    users = db.relationship("Users", back_populates="cookies")
+    cookies = db.relationship("Cookies", back_populates = "users")
 
     def __init__(self, user_id, cookie_id, inventory):
         self.user_id = user_id
@@ -140,35 +141,35 @@ class Cookie_Inventory(db.Model):
         return {
             "user_id": self.user_id,
             "cookie_name": self.cookies.cookie_name,
-            'picture_url': self.cookies.picture_url,
+            "picture_url": self.cookies.picture_url,
             "description": self.cookies.description,
             "inventory": self.inventory,
             "projected_inventory": self.projected_inventory
         }
     
 class Payment_Types(db.Model):
-    __tablename__ = 'payment_types'
+    __tablename__ = "payment_types"
     id = db.Column(db.Integer, primary_key=True)
     payment_type_name = db.Column(db.String(50), unique=True, nullable=False)
 
-    orders = db.relationship('Orders', back_populates='payment_types', cascade="all, delete-orphan")
+    orders = db.relationship("Orders", back_populates="payment_types", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'payment_type_name': self.payment_type_name
+            "id": self.id,
+            "payment_type_name": self.payment_type_name
         }
 
 class Customers(db.Model):
-    __tablename__ = 'customers'
+    __tablename__ = "customers"
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String)
     last_name = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     email = db.Column(db.String(120))
 
-    users = db.relationship('Users', back_populates='customers')
-    orders = db.relationship('Orders', back_populates='customers', cascade="all, delete-orphan")
+    users = db.relationship("Users", back_populates="customers")
+    orders = db.relationship("Orders", back_populates="customers", cascade="all, delete-orphan")
     
     def __init__(self, user_id, first_name=None, last_name=None):
         self.first_name = first_name
@@ -185,11 +186,11 @@ class Customers(db.Model):
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'email': self.email
+            "id": self.id,
+            "user_id": self.user_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email if self.email else ""
         }
 
 OrderStatus = ["Incomplete", "Complete"]
@@ -198,27 +199,29 @@ DeliveryStatus = ["Not Sent", "Mailed", "Delivered", "Delayed", "Picked Up"]
 
 # Actual orders for the cookies.
 class Orders(db.Model):
-    __tablename__ = 'orders'
+    __tablename__ = "orders"
     id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
-    payment_id = db.Column(db.Integer, db.ForeignKey('payment_types.id'))
-    notes = db.Column(db.String, nullable=False, default='')
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    customer_id = db.Column(db.Integer, db.ForeignKey("customers.id"))
+    payment_id = db.Column(db.Integer, db.ForeignKey("payment_types.id"))
+    notes = db.Column(db.String, nullable=False, default="")
     date_added = db.Column(db.Date, default=db.func.current_timestamp())
     date_modified = db.Column(db.Date, default=db.func.current_timestamp())
     order_status_stored = db.Column(db.String, nullable=False, default="Incomplete")
     payment_status_stored = db.Column(db.String, nullable=False, default="Unconfirmed")
     delivery_status_stored = db.Column(db.String, nullable=False, default="Not Sent")
     
-    customers = db.relationship('Customers', back_populates='orders')
-    cookies = db.relationship('Order_Cookies', back_populates = 'orders', cascade="all, delete-orphan")
-    payment_types = db.relationship('Payment_Types', back_populates='orders')
+    users = db.relationship("Users", back_populates="orders")
+    customers = db.relationship("Customers", back_populates="orders")
+    cookies = db.relationship("Order_Cookies", back_populates = "orders", cascade="all, delete-orphan")
+    payment_types = db.relationship("Payment_Types", back_populates="orders")
 
-    def __init__(self, customer_id, payment_type=None, notes = ""):
+    def __init__(self, user_id, customer_id=None, payment_type="Unspecified", notes="", payment_status="Unconfirmed", delivery_status="Not Sent"):
+        self.user_id = user_id
         self.customer_id = customer_id
-        if payment_type:
-            self.payment_type_name(payment_type)
-        else:
-            self.payment_type_name("Unspecified")
+        self.payment_type_name(payment_type)
+        self.payment_status = payment_status
+        self.delivery_status = delivery_status
         self.notes = notes
     
     def order_updated(self):
@@ -232,10 +235,30 @@ class Orders(db.Model):
         else:
             self.payment_id = payment_type.id
         return
+
+    # The getter and setter for the payment status.
+    @property
+    def payment_status(self):
+        return self.payment_status_stored
+    
+    @payment_status.setter
+    def payment_status(self, new_status):
+        if new_status in PaymentStatus:
+            self.payment_status_stored = new_status
+    
+    # The getter and setter for the delivery status.
+    @property
+    def delivery_status(self):
+        return self.delivery_status_stored
+    
+    @delivery_status.setter
+    def delivery_status(self, new_status):
+        if new_status in DeliveryStatus:
+            self.delivery_status_stored = new_status
     
     # When an order is complete, it must alter the actual inventory.
     def complete_order(self):
-        user_id = self.customers.users.id
+        user_id = self.users.id
         order_cookies = self.cookies
         for order_cookie in order_cookies:
             cookie_inventory = Cookie_Inventory.query.filter_by(user_id=user_id, cookie_id=order_cookie.cookie_id).first()
@@ -260,31 +283,13 @@ class Orders(db.Model):
 
     @order_status.setter
     def order_status(self, new_status):
-        # The payment status must be set to complete and the delivery status must be picked up before the order status can be set to complete.
-        if new_status == "Complete" and self.payment_status == "Complete" and self.delivery_status == "Picked Up":
+        # The payment status must be set to complete and the delivery status must not indicate an issue before the order status can be set to complete.
+        if (new_status == "Complete" 
+            and self.payment_status == "Complete" 
+            and self.delivery_status != "Not Sent" and self.delivery_status != "Delivered"):
             self.complete_order()
         else:
             self.order_status_stored = "Incomplete"
-
-    # The getter and setter for the payment status.
-    @property
-    def payment_status(self):
-        return self.payment_status_stored
-    
-    @payment_status.setter
-    def payment_status(self, new_status):
-        if new_status in PaymentStatus:
-            self.payment_status_stored = new_status
-    
-    # The getter and setter for the delivery status.
-    @property
-    def delivery_status(self):
-        return self.delivery_status_stored
-    
-    @delivery_status.setter
-    def delivery_status(self, new_status):
-        if new_status in DeliveryStatus:
-            self.delivery_status_stored = new_status
     
     # Total price of the order.
     @property
@@ -304,29 +309,30 @@ class Orders(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "customer_id": self.customer_id,
-            "customer_first_name": self.customers.first_name,
-            "customer_last_name": self.customers.last_name,
-            'payment_type': self.payment_types.payment_type_name,
-            'total_cost': self.total_cost,
-            'notes': self.notes,
-            'date_added': self.date_added,
-            'date_modified': self.date_modified,
-            'order_status': str(self.order_status),
-            'payment_status': str(self.payment_status),
-            'delivery_status': str(self.delivery_status),
-            'order_cookies': self.get_order_cookies()
+            "user_id": self.user_id,
+            "customer_id": self.customer_id if self.customer_id else "",
+            "customer_first_name": self.customers.first_name if self.customer_id else "",
+            "customer_last_name": self.customers.last_name if self.customer_id else "",
+            "payment_type": self.payment_types.payment_type_name,
+            "total_cost": self.total_cost,
+            "notes": self.notes,
+            "date_added": self.date_added,
+            "date_modified": self.date_modified,
+            "order_status": str(self.order_status),
+            "payment_status": str(self.payment_status),
+            "delivery_status": str(self.delivery_status),
+            "order_cookies": self.get_order_cookies()
         }
 
 # Each order's individual cookie count.
 class Order_Cookies(db.Model):
-    __tablename__ = 'order_cookies'
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), primary_key=True)
-    cookie_id = db.Column(db.Integer, db.ForeignKey('cookies.id'), primary_key=True)
+    __tablename__ = "order_cookies"
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), primary_key=True)
+    cookie_id = db.Column(db.Integer, db.ForeignKey("cookies.id"), primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
 
-    orders = db.relationship('Orders', back_populates='cookies')
-    cookies = db.relationship('Cookies', back_populates = 'orders')
+    orders = db.relationship("Orders", back_populates="cookies")
+    cookies = db.relationship("Cookies", back_populates = "orders")
     
     @property
     def price(self):

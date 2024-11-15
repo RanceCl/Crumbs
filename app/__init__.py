@@ -32,9 +32,6 @@ def register_blueprints(app):
         from .cookies import cookies as cookies_bp
         app.register_blueprint(cookies_bp, url_prefix='/cookies')
 
-        from .order_cookies import order_cookies as order_cookies_bp
-        app.register_blueprint(order_cookies_bp, url_prefix='/order_cookies')
-
         from .current_user import current_user as current_user_bp
         app.register_blueprint(current_user_bp, url_prefix='/current-user')
 
@@ -49,6 +46,12 @@ def register_blueprints(app):
 
         from .orders import orders as orders_bp
         app.register_blueprint(orders_bp, url_prefix='/orders')
+
+        from .order_cookies import order_cookies as order_cookies_bp
+        app.register_blueprint(order_cookies_bp, url_prefix='/order_cookies')
+
+        from .quick_orders import quick_orders as quick_orders_bp
+        app.register_blueprint(quick_orders_bp, url_prefix='/quick_orders')
 
         from .users import users as users_bp
         app.register_blueprint(users_bp, url_prefix='/users')
