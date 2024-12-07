@@ -2,6 +2,7 @@ from enum import IntEnum
 from . import db, bcrypt, login_manager
 from flask_login import UserMixin
 from . import user_validate
+from sqlalchemy import func
 
 class Users(db.Model, UserMixin):
     __tablename__ = "users"
@@ -54,30 +55,74 @@ class Users(db.Model, UserMixin):
                 db.session.add(new_cookie_inventory)
         db.session.commit()
     
-    # Current balance from finalized orders
+    # # Current balance from finalized orders
+    # @property
+    # def actual_balance(self):
+    #     # All COMPLETED orders belonging to the current user.
+    #     orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored=="Complete").all()
+    #     balance = 0.00
+
+    #     # Add the cost from each order.
+    #     for order in orders:
+    #         balance += order.total_cost
+    #     return balance
+    
+    # # Projected balance based on all orders.
+    # @property
+    # def projected_balance(self):
+    #     # All orders belonging to the current user that aren't complete (and therefore aren't applied to the final total.)
+    #     orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored!="Complete").all()
+    #     balance = self.balance
+
+    #     # Add the cost from each order.
+    #     for order in orders:
+    #         balance += order.total_cost
+    #     return balance
+
+    # Current balance from finalized orders grouped by payment_type
+
     @property
     def actual_balance(self):
-        # All COMPLETED orders belonging to the current user.
-        orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored=="Complete").all()
-        balance = 0.00
+        """
+        Aggregates the total balance for each payment type from completed orders.
+        Returns a dictionary with payment types as keys and total balances as values.
+        """
+        completed_orders = (
+            db.session.query(
+                Payment_Types.payment_type_name,
+                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),  # Dynamically calculate price
+            )
+            .join(Orders, Orders.payment_id == Payment_Types.id)
+            .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
+            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)  # Join with Cookies to access price
+            .filter(Orders.user_id == self.id, Orders.order_status_stored == "Complete")
+            .group_by(Payment_Types.payment_type_name)
+            .all()
+        )
 
-        # Add the cost from each order.
-        for order in orders:
-            balance += order.total_cost
-        return balance
-    
-    # Projected balance based on all orders.
+        return {payment_type: total_cost or 0.0 for payment_type, total_cost in completed_orders}
+
     @property
     def projected_balance(self):
-        # All orders belonging to the current user that aren't complete (and therefore aren't applied to the final total.)
-        orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored!="Complete").all()
-        balance = self.balance
+        """
+        Aggregates the projected balance for each payment type from non-completed orders.
+        Returns a dictionary with payment types as keys and total balances as values.
+        """
+        pending_orders = (
+            db.session.query(
+                Payment_Types.payment_type_name,
+                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),  # Dynamically calculate price
+            )
+            .join(Orders, Orders.payment_id == Payment_Types.id)
+            .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
+            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)  # Join with Cookies to access price
+            .filter(Orders.user_id == self.id, Orders.order_status_stored != "Complete")
+            .group_by(Payment_Types.payment_type_name)
+            .all()
+        )
 
-        # Add the cost from each order.
-        for order in orders:
-            balance += order.total_cost
-        return balance
-    
+        return {payment_type: total_cost or 0.0 for payment_type, total_cost in pending_orders}
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -85,8 +130,10 @@ class Users(db.Model, UserMixin):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "balance": self.balance,
-            "projected_balance": self.projected_balance
+            "actual_balance": self.actual_balance,  # Include actual balances by payment type
+            "projected_balance": self.projected_balance,  # Include projected balances by payment type
         }
+
 
 # User loader for flask-login
 @login_manager.user_loader
