@@ -80,7 +80,6 @@ class Users(db.Model, UserMixin):
     #     return balance
 
     # Current balance from finalized orders grouped by payment_type
-
     @property
     def actual_balance(self):
         """
@@ -90,11 +89,11 @@ class Users(db.Model, UserMixin):
         completed_orders = (
             db.session.query(
                 Payment_Types.payment_type_name,
-                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),  # Dynamically calculate price
+                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),
             )
             .join(Orders, Orders.payment_id == Payment_Types.id)
             .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
-            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)  # Join with Cookies to access price
+            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)
             .filter(Orders.user_id == self.id, Orders.order_status_stored == "Complete")
             .group_by(Payment_Types.payment_type_name)
             .all()
@@ -111,11 +110,11 @@ class Users(db.Model, UserMixin):
         pending_orders = (
             db.session.query(
                 Payment_Types.payment_type_name,
-                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),  # Dynamically calculate price
+                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),
             )
             .join(Orders, Orders.payment_id == Payment_Types.id)
             .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
-            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)  # Join with Cookies to access price
+            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)
             .filter(Orders.user_id == self.id, Orders.order_status_stored != "Complete")
             .group_by(Payment_Types.payment_type_name)
             .all()
@@ -130,8 +129,8 @@ class Users(db.Model, UserMixin):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "balance": self.balance,
-            "actual_balance": self.actual_balance,  # Include actual balances by payment type
-            "projected_balance": self.projected_balance,  # Include projected balances by payment type
+            "actual_balance": self.actual_balance,  
+            "projected_balance": self.projected_balance,
         }
 
 
