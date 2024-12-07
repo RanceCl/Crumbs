@@ -115,7 +115,7 @@ class Users(db.Model, UserMixin):
             .join(Orders, Orders.payment_id == Payment_Types.id)
             .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
             .join(Cookies, Cookies.id == Order_Cookies.cookie_id)
-            .filter(Orders.user_id == self.id, Orders.order_status_stored != "Complete")
+            .filter(Orders.user_id == self.id, Orders.order_status_stored == ("Incomplete"))
             .group_by(Payment_Types.payment_type_name)
             .all()
         )
@@ -256,7 +256,7 @@ class Orders(db.Model):
     date_added = db.Column(db.Date, default=db.func.current_timestamp())
     date_modified = db.Column(db.Date, default=db.func.current_timestamp())
     order_status_stored = db.Column(db.String, nullable=False, default="Incomplete")
-    payment_status_stored = db.Column(db.String, nullable=False, default="Unconfirmed")
+    payment_status_stored = db.Column(db.String, nullable=False, default="Incomplete")
     delivery_status_stored = db.Column(db.String, nullable=False, default="Not Sent")
     
     users = db.relationship("Users", back_populates="orders")
@@ -264,7 +264,7 @@ class Orders(db.Model):
     cookies = db.relationship("Order_Cookies", back_populates = "orders", cascade="all, delete-orphan")
     payment_types = db.relationship("Payment_Types", back_populates="orders")
 
-    def __init__(self, user_id, customer_id=None, payment_type="Unspecified", notes="", payment_status="Unconfirmed", delivery_status="Not Sent"):
+    def __init__(self, user_id, customer_id=None, payment_type="Unspecified", notes="", payment_status="Incomplete", delivery_status="Not Sent"):
         self.user_id = user_id
         self.customer_id = customer_id
         self.payment_type_name(payment_type)
