@@ -55,38 +55,16 @@ class Users(db.Model, UserMixin):
                 db.session.add(new_cookie_inventory)
         db.session.commit()
     
-    # # Current balance from finalized orders
-    # @property
-    # def actual_balance(self):
-    #     # All COMPLETED orders belonging to the current user.
-    #     orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored=="Complete").all()
-    #     balance = 0.00
-
-    #     # Add the cost from each order.
-    #     for order in orders:
-    #         balance += order.total_cost
-    #     return balance
-    
-    # # Projected balance based on all orders.
-    # @property
-    # def projected_balance(self):
-    #     # All orders belonging to the current user that aren't complete (and therefore aren't applied to the final total.)
-    #     orders = Orders.query.join(Customers).join(Users).filter(Users.id==self.id, Orders.order_status_stored!="Complete").all()
-    #     balance = self.balance
-
-    #     # Add the cost from each order.
-    #     for order in orders:
-    #         balance += order.total_cost
-    #     return balance
-
-    # Current balance from finalized orders grouped by payment_type
+    # Get current balance of payment types from finalized orders and finalized payements (though order may be incomplete)
     @property
     def actual_balance(self):
         """
-        Aggregates the total balance for each payment type from completed orders.
+        Aggregates the total balance for each payment type:
+        - Includes orders with `order_status` set to "Complete".
+        - Includes orders with `payment_status` set to "Complete" but `order_status` is incomplete.
         Returns a dictionary with payment types as keys and total balances as values.
         """
-        completed_orders = (
+        completed_status_orders = (
             db.session.query(
                 Payment_Types.payment_type_name,
                 func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),
@@ -94,12 +72,43 @@ class Users(db.Model, UserMixin):
             .join(Orders, Orders.payment_id == Payment_Types.id)
             .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
             .join(Cookies, Cookies.id == Order_Cookies.cookie_id)
-            .filter(Orders.user_id == self.id, Orders.order_status_stored == "Complete")
+            .filter(
+                Orders.user_id == self.id,
+                Orders.order_status_stored == "Complete",
+            )
             .group_by(Payment_Types.payment_type_name)
             .all()
         )
 
-        return {payment_type: total_cost or 0.0 for payment_type, total_cost in completed_orders}
+        completed_payment_orders = (
+            db.session.query(
+                Payment_Types.payment_type_name,
+                func.sum(Order_Cookies.quantity * Cookies.price).label("total_cost"),
+            )
+            .join(Orders, Orders.payment_id == Payment_Types.id)
+            .join(Order_Cookies, Order_Cookies.order_id == Orders.id)
+            .join(Cookies, Cookies.id == Order_Cookies.cookie_id)
+            .filter(
+                Orders.user_id == self.id,
+                Orders.order_status_stored != "Complete",  # Avoid duplication with completed orders
+                Orders.payment_status_stored == "Complete",  # Include orders with completed payment only
+            )
+            .group_by(Payment_Types.payment_type_name)
+            .all()
+        )
+
+        # Combine results into a single dictionary
+        balance_dict = {}
+        for payment_type, total_cost in completed_status_orders:
+            balance_dict[payment_type] = total_cost or 0.0
+
+        for payment_type, total_cost in completed_payment_orders:
+            if payment_type in balance_dict:
+                balance_dict[payment_type] += total_cost or 0.0
+            else:
+                balance_dict[payment_type] = total_cost or 0.0
+
+        return balance_dict
 
     @property
     def projected_balance(self):
