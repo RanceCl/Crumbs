@@ -4,6 +4,7 @@ from flask_cors import CORS
 
 from ..models import Users, Orders, Payment_Types, Customers, Cookies, Cookie_Inventory, Order_Cookies
 import psycopg2
+import random
 
 from .. import db
 
@@ -108,9 +109,11 @@ def add_order(user_id, customer_id, payment_type_name):
 
 # For each customer, add four orders
 def populate_orders(user_id, customer_id):
-    for _ in range(4):
-        new_order_id = add_order(user_id, customer_id, "Unspecified")
-        populate_order_cookies(new_order_id)
+    # for _ in range(4):
+    #     new_order_id = add_order(user_id, customer_id, "Unspecified")
+    #     populate_order_cookies(new_order_id)
+    new_order_id = add_order(user_id, customer_id, "Unspecified")
+    populate_order_cookies(new_order_id)
     return None
 
 # Customer initialization
@@ -137,7 +140,7 @@ def populate_customers():
     user_ids = [id[0] for id in Users.query.with_entities(Users.id).all()]
     for user_id in user_ids:
         # Add three names to the current user.
-        for _ in range(3):
+        for _ in range(12):
             if name_index >= len(names):
                 # Stop adding customers if we've used all of the names.
                 return "Customers populated"

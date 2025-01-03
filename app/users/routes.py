@@ -88,3 +88,15 @@ def change_password():
     elif request.method == 'PATCH':
         return jsonify({"status": "error", "message": "Please fill out the form!"}), 400
     return jsonify({"status": "error", "message": "GET is not valid for this route."}), 400
+
+@users.route('/payment_summary', methods=['GET'])
+@login_required
+def payment_summary():
+    """
+    Fetch the payment type summaries for the current user.
+    """
+    try:
+        summaries = current_user.payment_type_summaries
+        return jsonify(summaries), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": "Failed to retrieve payment summaries.", "details": str(e)}), 500

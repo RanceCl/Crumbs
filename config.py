@@ -1,12 +1,3 @@
-'''
-host="localhost"
-database="crumbs_db"
-user="annclawson"
-password="postgres"
-
-print('postgresql://postgres:postgres@localhost/crumbs_db')
-print('postgresql://'+user+':'+password+'@'+host+'/'+database)
-'''
 import os
 import load_env_var
 from datetime import timedelta
