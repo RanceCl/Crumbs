@@ -21,7 +21,7 @@ if __name__ == '__main__':
     app.run(debug=True)
 '''
 
-app = create_app()
+app = create_app(config_name="default")
 
 if __name__ == '__main__':
     from app.models import *

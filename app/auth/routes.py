@@ -20,6 +20,9 @@ def register():
         and 'first_name' in request.form
         and 'last_name' in request.form):
 
+        print(request)
+        print(request.form)
+
         # Retreive and validate email
         email = request.form.get("email").strip().lower()
         

@@ -3,7 +3,7 @@ from flask_login import LoginManager
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from config import Config
+from config import config
 
 
 bcrypt = Bcrypt()
@@ -12,9 +12,9 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-def create_app():
+def create_app(config_name):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config[config_name])
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:5173"}})
     bcrypt.init_app(app)
     db.init_app(app)
